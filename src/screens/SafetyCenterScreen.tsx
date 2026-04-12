@@ -58,7 +58,7 @@ export default function SafetyCenterScreen({ navigation, theme }: any) {
               </TouchableOpacity>
             </View>
           </View>
-          <TouchableOpacity style={[styles.trustCard, { backgroundColor: colors.primaryContainer + '33' }]} onPress={() => navigation.navigate('SafetyReport')} activeOpacity={0.8}>
+          <TouchableOpacity style={[styles.trustCard, { backgroundColor: colors.primaryContainer + '33' }]} onPress={() => navigation.navigate('TrustSystem')} activeOpacity={0.8}>
             <Ionicons name="shield-checkmark" size={sc(28)} color={colors.primary} />
             <Text style={[styles.trustTitle, { color: colors.primary }]}>Trust System</Text>
             <Text style={[styles.trustDesc, { color: colors.onSurfaceVariant }]}>Learn how we keep our community kind through peer verification.</Text>

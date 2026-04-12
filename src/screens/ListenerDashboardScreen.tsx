@@ -266,6 +266,7 @@ const styles = StyleSheet.create({
 
   commentsHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: sc(10), marginBottom: sc(10) },
   commentsTitle: { fontSize: sc(16), fontWeight: '700' },
+  commentTime: { fontSize: sc(11), fontWeight: '500' },
   seeAll: { fontSize: sc(12), fontWeight: '600' },
   commentCard: { flexDirection: 'row', gap: sc(12), borderRadius: sc(14), padding: sc(14), marginBottom: sc(8) },
   commentContent: { flex: 1 },

@@ -1,13 +1,20 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Dimensions, ScrollView, Animated, Easing } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  Dimensions,
+  Animated,
+  Easing,
+  Platform,
+} from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-const { width: W } = Dimensions.get('window');
+const { width: W, height: H } = Dimensions.get('window');
 const sc = (v: number) => Math.round(v * (W / 390));
-
-const WAVE_HEIGHTS = [40, 70, 100, 70, 40, 60, 90, 50, 80, 45, 65, 85, 55, 75, 95, 50];
 
 export default function ActiveCallScreen({ navigation, theme }: any) {
   const insets = useSafeAreaInsets();
@@ -15,109 +22,99 @@ export default function ActiveCallScreen({ navigation, theme }: any) {
   const [isMuted, setIsMuted] = useState(false);
   const [isSpeaker, setIsSpeaker] = useState(false);
   const [seconds, setSeconds] = useState(0);
+  const [breathPhase, setBreathPhase] = useState<'inhale' | 'hold' | 'exhale'>('inhale');
+  const [showControls, setShowControls] = useState(true);
 
-  // Animation values
-  const fadeAnims = useRef([0, 1, 2, 3].map(() => new Animated.Value(0))).current;
-  const slideAnims = useRef([0, 1, 2, 3].map(() => new Animated.Value(40))).current;
-  const pulseAnim = useRef(new Animated.Value(1)).current;
-  const glowAnim = useRef(new Animated.Value(0.4)).current;
-  const waveAnims = useRef(WAVE_HEIGHTS.map(() => new Animated.Value(1))).current;
+  // Animation refs
+  const avatarScale = useRef(new Animated.Value(1)).current;
+  const ringScale = useRef(new Animated.Value(0.8)).current;
+  const ringOpacity = useRef(new Animated.Value(0.6)).current;
+  const breathScale = useRef(new Animated.Value(1)).current;
+  const breathOpacity = useRef(new Animated.Value(1)).current;
+  const controlsTranslateY = useRef(new Animated.Value(0)).current;
+  const fadeBg = useRef(new Animated.Value(0)).current;
 
-  // Entrance animations
-  useEffect(() => {
-    fadeAnims.forEach((fade, i) => {
-      Animated.parallel([
-        Animated.timing(fade, {
-          toValue: 1,
-          duration: 500,
-          delay: i * 120,
-          easing: Easing.out(Easing.ease),
-          useNativeDriver: true,
-        }),
-        Animated.timing(slideAnims[i], {
-          toValue: 0,
-          duration: 500,
-          delay: i * 120,
-          easing: Easing.out(Easing.ease),
-          useNativeDriver: true,
-        }),
-      ]).start();
-    });
-  }, []);
-
-  // Breathing pulse for avatar
-  useEffect(() => {
-    const loop = () => {
-      Animated.sequence([
-        Animated.timing(pulseAnim, {
-          toValue: 1.08,
-          duration: 1800,
-          easing: Easing.inOut(Easing.ease),
-          useNativeDriver: true,
-        }),
-        Animated.timing(pulseAnim, {
-          toValue: 1,
-          duration: 1800,
-          easing: Easing.inOut(Easing.ease),
-          useNativeDriver: true,
-        }),
-      ]).start(loop);
-    };
-    loop();
-  }, []);
-
-  // Glow pulse for call indicator
-  useEffect(() => {
-    const loop = () => {
-      Animated.sequence([
-        Animated.timing(glowAnim, {
-          toValue: 1,
-          duration: 1500,
-          easing: Easing.inOut(Easing.ease),
-          useNativeDriver: true,
-        }),
-        Animated.timing(glowAnim, {
-          toValue: 0.4,
-          duration: 1500,
-          easing: Easing.inOut(Easing.ease),
-          useNativeDriver: true,
-        }),
-      ]).start(loop);
-    };
-    loop();
-  }, []);
-
-  // Wave animation
-  useEffect(() => {
-    const loop = () => {
-      Animated.parallel(
-        waveAnims.map((wave, i) => {
-          const direction = i % 2 === 0 ? 1.3 : 0.7;
-          return Animated.sequence([
-            Animated.timing(wave, {
-              toValue: direction,
-              duration: 300 + i * 60,
-              easing: Easing.inOut(Easing.ease),
-              useNativeDriver: true,
-            }),
-            Animated.timing(wave, {
-              toValue: 1,
-              duration: 300 + i * 60,
-              easing: Easing.inOut(Easing.ease),
-              useNativeDriver: true,
-            }),
-          ]);
-        })
-      ).start(loop);
-    };
-    loop();
-  }, []);
-
-  // Timer
+  // Session timer
   useEffect(() => {
     const timer = setInterval(() => setSeconds((s) => s + 1), 1000);
     return () => clearInterval(timer);
   }, []);
+
+  // Avatar breathing pulse
+  useEffect(() => {
+    const loop = () => {
+      Animated.sequence([
+        Animated.timing(avatarScale, { toValue: 1.05, duration: 2000, easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
+        Animated.timing(avatarScale, { toValue: 1, duration: 2000, easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
+      ]).start(loop);
+    };
+    loop();
+  }, []);
+
+  // Ring pulse
+  useEffect(() => {
+    const loop = () => {
+      Animated.sequence([
+        Animated.parallel([
+          Animated.timing(ringScale, { toValue: 1.4, duration: 2000, easing: Easing.out(Easing.ease), useNativeDriver: true }),
+          Animated.timing(ringOpacity, { toValue: 0, duration: 2000, easing: Easing.out(Easing.ease), useNativeDriver: true }),
+        ]),
+        Animated.parallel([
+          Animated.timing(ringScale, { toValue: 0.8, duration: 0, useNativeDriver: true }),
+          Animated.timing(ringOpacity, { toValue: 0.6, duration: 0, useNativeDriver: true }),
+        ]),
+      ]).start(loop);
+    };
+    loop();
+  }, []);
+
+  // Breathing exercise cycle (4-4-4 box breathing)
+  useEffect(() => {
+    const cycleBreathing = () => {
+      // Inhale 4s
+      Animated.sequence([
+        Animated.parallel([
+          Animated.timing(breathScale, { toValue: 1.6, duration: 4000, easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
+          Animated.timing(breathOpacity, { toValue: 0.7, duration: 4000, easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
+        ]),
+        Animated.delay(4000), // Hold 4s
+        Animated.parallel([
+          Animated.timing(breathScale, { toValue: 1, duration: 4000, easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
+          Animated.timing(breathOpacity, { toValue: 0.3, duration: 4000, easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
+        ]),
+      ]).start(() => cycleBreathing());
+    };
+    cycleBreathing();
+  }, []);
+
+  // Breathing phase text
+  useEffect(() => {
+    const phaseLoop = () => {
+      setBreathPhase('inhale');
+      setTimeout(() => setBreathPhase('hold'), 4000);
+      setTimeout(() => setBreathPhase('exhale'), 8000);
+      setTimeout(phaseLoop, 12000);
+    };
+    phaseLoop();
+  }, []);
+
+  // Tap screen to toggle controls visibility
+  const toggleControls = () => {
+    if (showControls) {
+      Animated.parallel([
+        Animated.timing(controlsTranslateY, { toValue: H, duration: 300, easing: Easing.out(Easing.ease), useNativeDriver: true }),
+        Animated.timing(fadeBg, { toValue: 1, duration: 300, useNativeDriver: true }),
+      ]).start(() => setShowControls(false));
+    } else {
+      setShowControls(true);
+      controlsTranslateY.setValue(H);
+      fadeBg.setValue(1);
+      Animated.parallel([
+        Animated.timing(controlsTranslateY, { toValue: 0, duration: 300, easing: Easing.out(Easing.ease), useNativeDriver: true }),
+        Animated.timing(fadeBg, { toValue: 0, duration: 300, useNativeDriver: true }),
+      ]).start();
+    }
+  };
 
   const formatTime = (s: number) => {
     const m = Math.floor(s / 60);
@@ -125,177 +122,329 @@ export default function ActiveCallScreen({ navigation, theme }: any) {
     return `${m.toString().padStart(2, '0')}:${sec.toString().padStart(2, '0')}`;
   };
 
-  const AnimatedCard = ({ children, index }: { children: React.ReactNode; index: number }) => (
-    <Animated.View
-      style={{
-        opacity: fadeAnims[index],
-        transform: [{ translateY: slideAnims[index] }],
-      }}
-    >
-      {children}
-    </Animated.View>
-  );
+  const breathInstruction = breathPhase === 'inhale' ? 'Breathe in' : breathPhase === 'hold' ? 'Hold' : 'Breathe out';
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.background }}>
-      <StatusBar style={isDark ? 'light' : 'dark'} />
+      <StatusBar style={isDark ? 'light' : 'dark'} translucent />
 
-      {/* Decorative BG */}
-      <View style={[styles.bgBlur1, { backgroundColor: colors.primaryContainer + '0D' }]} pointerEvents="none" />
-      <View style={[styles.bgBlur2, { backgroundColor: colors.secondaryContainer + '0D' }]} pointerEvents="none" />
+      {/* Ambient background blobs */}
+      <View style={[styles.bgBlob1, { backgroundColor: colors.primaryContainer + '08' }]} pointerEvents="none" />
+      <View style={[styles.bgBlob2, { backgroundColor: colors.tertiaryContainer + '06' }]} pointerEvents="none" />
 
-      {/* Top Bar */}
-      <View style={[styles.topBar, { paddingTop: insets.top + sc(8), paddingHorizontal: sc(20) }]}>
-        <View style={styles.brand}>
-          <Ionicons name="shield-checkmark" size={sc(20)} color={colors.primary} />
-          <Text style={[styles.brandText, { color: colors.primary }]}>Active Session</Text>
+      {/* Tap area to toggle controls (full screen) */}
+      <TouchableOpacity
+        style={styles.fullScreenTap}
+        activeOpacity={1}
+        onPress={toggleControls}
+      >
+        {/* Session Header */}
+        <View style={[styles.sessionHeader, { paddingTop: insets.top + sc(12) }]}>
+          <View style={styles.brand}>
+            <Ionicons name="shield-checkmark" size={sc(18)} color={colors.primary} />
+            <Text style={[styles.brandText, { color: colors.primary }]}>Pill</Text>
+          </View>
+
         </View>
-        <View style={{ width: sc(40) }} />
-      </View>
 
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        {/* Call Info Card */}
-        <AnimatedCard index={0}>
-          <View style={[styles.callInfoCard, { backgroundColor: colors.surfaceContainerLow }]}>
-            <Animated.View style={{ transform: [{ scale: pulseAnim }] }}>
-              <View style={[styles.callerAvatar, { backgroundColor: colors.primary }]}>
-                <Ionicons name="person" size={sc(28)} color={colors.onPrimary} />
+        {/* Center: Avatar + Breathing Exercise */}
+        <View style={styles.centerArea}>
+          {/* Breathing ring */}
+          <Animated.View style={{ position: 'absolute', transform: [{ scale: breathScale }], opacity: breathOpacity }}>
+            <View style={[styles.breathRing, { borderColor: colors.primary + '44' }]} />
+          </Animated.View>
+
+          {/* Avatar with pulse rings */}
+          <View style={styles.avatarContainer}>
+            <Animated.View style={{ position: 'absolute', transform: [{ scale: ringScale }], opacity: ringOpacity }}>
+              <View style={[styles.pulseRing, { borderColor: colors.primaryFixed + '66' }]} />
+            </Animated.View>
+            <Animated.View style={{ transform: [{ scale: avatarScale }] }}>
+              <View style={[styles.avatar, { backgroundColor: colors.primary }]}>
+                <Ionicons name="person" size={sc(36)} color={colors.onPrimary} />
               </View>
             </Animated.View>
-            <Text style={[styles.callerName, { color: colors.onSurface }]}>Anonymous Listener</Text>
-            <Animated.View style={[styles.timerBadge, { backgroundColor: colors.surfaceContainerHigh }, { opacity: glowAnim }]}>
-              <View style={[styles.timerDot, { backgroundColor: colors.primary }]} />
-              <Text style={[styles.timerText, { color: colors.primary }]}>{formatTime(seconds)}</Text>
-            </Animated.View>
-            <View style={styles.callerStatus}>
-              <Ionicons name="checkmark-circle" size={sc(10)} color={colors.primary} />
-              <Text style={[styles.callerStatusText, { color: colors.primary }]}>Connected & encrypted</Text>
-            </View>
           </View>
-        </AnimatedCard>
 
-        {/* Voice Visualization */}
-        <AnimatedCard index={1}>
-          <View style={styles.voiceSection}>
-            <View style={[styles.voicePulseOuter, { backgroundColor: colors.primaryContainer + '22', borderColor: colors.primary + '11' }]}>
-              <View style={[styles.voicePulseInner, { backgroundColor: colors.surface }]}>
-                <Ionicons name="mic" size={sc(32)} color={colors.primary} />
-              </View>
-            </View>
-            {/* Sound Wave Lines */}
-            <View style={styles.waveContainer}>
-              {waveAnims.map((waveAnim, i) => {
-                const baseHeight = WAVE_HEIGHTS[i];
-                return (
-                  <Animated.View
-                    key={i}
-                    style={[
-                      styles.waveBar,
-                      {
-                        height: sc(baseHeight / 3.5),
-                        opacity: Animated.add(0.2, Animated.multiply(waveAnim, 0.5)),
-                        backgroundColor: colors.primary,
-                        transform: [{ scaleY: waveAnim }],
-                      },
-                    ]}
-                  />
-                );
-              })}
-            </View>
+          {/* Listener name */}
+          <Text style={[styles.listenerName, { color: colors.onSurface }]}>Anonymous Listener</Text>
+
+          {/* Session timer */}
+          <Text style={[styles.sessionTimer, { color: colors.onSurfaceVariant }]}>
+            {formatTime(seconds)}
+          </Text>
+
+          {/* Breathing instruction */}
+          <View style={[styles.breathCard, { backgroundColor: colors.surfaceContainerLow }]}>
+            <Ionicons name="leaf-outline" size={sc(20)} color={colors.primary} />
+            <Text style={[styles.breathInstruction, { color: colors.primary }]}>
+              {breathInstruction}
+            </Text>
           </View>
-        </AnimatedCard>
 
-        {/* Controls */}
-        <AnimatedCard index={2}>
-          <View style={styles.controlsGrid}>
-            <TouchableOpacity
-              style={[styles.controlButton, { backgroundColor: colors.surfaceContainerLow }, isMuted && { backgroundColor: colors.primaryContainer + '44' }]}
-              onPress={() => setIsMuted(!isMuted)}
-              activeOpacity={0.7}
-            >
-              <Ionicons
-                name={isMuted ? 'mic-off' : 'mic'}
-                size={sc(24)}
-                color={isMuted ? colors.primary : colors.onSurfaceVariant}
-              />
-              <Text style={[styles.controlLabel, { color: isMuted ? colors.primary : colors.onSurfaceVariant }]}>
-                {isMuted ? 'Unmute' : 'Mute'}
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.controlButton, { backgroundColor: colors.surfaceContainerLow }, isSpeaker && { backgroundColor: colors.primaryContainer + '44' }]}
-              onPress={() => setIsSpeaker(!isSpeaker)}
-              activeOpacity={0.7}
-            >
-              <Ionicons
-                name={isSpeaker ? 'volume-high' : 'volume-low'}
-                size={sc(24)}
-                color={isSpeaker ? colors.primary : colors.onSurfaceVariant}
-              />
-              <Text style={[styles.controlLabel, { color: isSpeaker ? colors.primary : colors.onSurfaceVariant }]}>
-                {isSpeaker ? 'Speaker On' : 'Speaker'}
-              </Text>
-            </TouchableOpacity>
-          </View>
-        </AnimatedCard>
-
-        {/* End Session */}
-        <AnimatedCard index={3}>
+          {/* Connection status - taps to Trust System */}
           <TouchableOpacity
-            style={[styles.endCallButton, { backgroundColor: colors.error }]}
-            onPress={() => navigation.navigate('DonationScreen')}
-            activeOpacity={0.8}
+            style={styles.statusRow}
+            onPress={() => navigation.navigate('TrustSystem')}
+            activeOpacity={0.7}
           >
-            <Ionicons name="call" size={sc(22)} color={colors.onError} style={{ transform: [{ rotate: '135deg' }] }} />
-            <Text style={[styles.endCallText, { color: colors.onError }]}>End Session</Text>
+            <Ionicons name="lock-closed" size={sc(10)} color={colors.outlineVariant} />
+            <Text style={[styles.statusText, { color: colors.outlineVariant }]}>
+              End-to-end encrypted — Trust system
+            </Text>
+            <Ionicons name="chevron-forward" size={sc(14)} color={colors.outlineVariant} />
           </TouchableOpacity>
 
-          {/* Safety */}
+          {/* Safety Report Button */}
           <TouchableOpacity
-            style={[styles.safetyButton, { backgroundColor: colors.surfaceContainerLow, borderColor: colors.error + '22' }]}
+            style={[styles.safetyReportBtn, { backgroundColor: colors.errorContainer + '1A', borderColor: colors.error + '22' }]}
             onPress={() => navigation.navigate('SafetyReport')}
             activeOpacity={0.7}
           >
-            <Ionicons name="shield-outline" size={sc(16)} color={colors.error} />
-            <Text style={[styles.safetyButtonText, { color: colors.error }]}>Safety & Reporting</Text>
+            <Ionicons name="warning-outline" size={sc(16)} color={colors.error} />
+            <Text style={[styles.safetyReportBtnText, { color: colors.error }]}>
+              Report a Safety Concern
+            </Text>
           </TouchableOpacity>
-        </AnimatedCard>
-      </ScrollView>
+        </View>
+
+        {/* End session hint */}
+        <View style={[styles.endHint, { paddingBottom: insets.top + sc(8) }]}>
+          <Text style={[styles.endHintText, { color: colors.outlineVariant }]}>
+            Tap to hide controls
+          </Text>
+        </View>
+      </TouchableOpacity>
+
+      {/* Controls panel - slides up from bottom */}
+      <Animated.View
+        style={[
+          styles.controlsPanel,
+          {
+            paddingBottom: Math.max(insets.bottom, 12),
+            backgroundColor: colors.surfaceContainerLow + 'F2',
+            borderTopColor: colors.outlineVariant + '11',
+            transform: [{ translateY: controlsTranslateY }],
+            opacity: fadeBg.interpolate({
+              inputRange: [0, 1],
+              outputRange: [1, 0.85],
+            }),
+          },
+        ]}
+      >
+        {/* Control buttons row */}
+        <View style={styles.controlsRow}>
+          <TouchableOpacity
+            style={[styles.ctrlButton, { backgroundColor: isMuted ? colors.primaryContainer + '44' : colors.surfaceContainerHigh }]}
+            onPress={() => setIsMuted(!isMuted)}
+            activeOpacity={0.7}
+          >
+            <Ionicons
+              name={isMuted ? 'mic-off' : 'mic'}
+              size={sc(22)}
+              color={isMuted ? colors.primary : colors.onSurface}
+            />
+            <Text style={[styles.ctrlLabel, { color: isMuted ? colors.primary : colors.onSurfaceVariant }]}>
+              {isMuted ? 'Unmute' : 'Mute'}
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[styles.ctrlButton, { backgroundColor: isSpeaker ? colors.primaryContainer + '44' : colors.surfaceContainerHigh }]}
+            onPress={() => setIsSpeaker(!isSpeaker)}
+            activeOpacity={0.7}
+          >
+            <Ionicons
+              name={isSpeaker ? 'volume-high' : 'volume-low'}
+              size={sc(22)}
+              color={isSpeaker ? colors.primary : colors.onSurface}
+            />
+            <Text style={[styles.ctrlLabel, { color: isSpeaker ? colors.primary : colors.onSurfaceVariant }]}>
+              Speaker
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[styles.ctrlButton, { backgroundColor: colors.surfaceContainerHigh }]}
+            onPress={() => navigation.navigate('SafetyReport')}
+            activeOpacity={0.7}
+          >
+            <Ionicons name="shield-outline" size={sc(22)} color={colors.error} />
+            <Text style={[styles.ctrlLabel, { color: colors.error }]}>Report</Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* End session button */}
+        <TouchableOpacity
+          style={[styles.endButton, { backgroundColor: colors.error }]}
+          onPress={() => navigation.navigate('DonationScreen')}
+          activeOpacity={0.8}
+        >
+          <Ionicons name="call" size={sc(20)} color={colors.onError} style={{ transform: [{ rotate: '135deg' }] }} />
+          <Text style={[styles.endButtonText, { color: colors.onError }]}>End Session</Text>
+        </TouchableOpacity>
+      </Animated.View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  topBar: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingBottom: sc(8) },
-  brand: { flexDirection: 'row', alignItems: 'center', gap: sc(6) },
-  brandText: { fontSize: sc(15), fontWeight: '800', letterSpacing: -0.5 },
-  exitButton: { width: sc(40), height: sc(40), borderRadius: sc(20), alignItems: 'center', justifyContent: 'center' },
-  scrollContent: { paddingHorizontal: sc(20), paddingTop: sc(8), paddingBottom: sc(40) },
+  fullScreenTap: { flex: 1 },
+  sessionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: sc(20),
+  },
+  brand: { flexDirection: 'row', alignItems: 'center', gap: sc(5) },
+  brandText: { fontSize: sc(14), fontWeight: '800', letterSpacing: -0.5 },
 
-  callInfoCard: { alignItems: 'center', borderRadius: sc(20), paddingVertical: sc(24), paddingHorizontal: sc(20), marginBottom: sc(24) },
-  callerAvatar: { width: sc(64), height: sc(64), borderRadius: sc(32), alignItems: 'center', justifyContent: 'center', marginBottom: sc(12) },
-  callerName: { fontSize: sc(20), fontWeight: '800', marginBottom: sc(8), letterSpacing: -0.3 },
-  timerBadge: { flexDirection: 'row', alignItems: 'center', gap: sc(6), paddingHorizontal: sc(14), paddingVertical: sc(6), borderRadius: sc(18), marginBottom: sc(8) },
-  timerDot: { width: 8, height: 8, borderRadius: 4 },
-  timerText: { fontSize: sc(16), fontWeight: '700', fontVariant: ['tabular-nums'] },
-  callerStatus: { flexDirection: 'row', alignItems: 'center', gap: sc(4) },
-  callerStatusText: { fontSize: sc(11), fontWeight: '600', opacity: 0.8 },
-
-  voiceSection: { alignItems: 'center', marginBottom: sc(28) },
-  voicePulseOuter: { width: sc(120), height: sc(120), borderRadius: sc(60), alignItems: 'center', justifyContent: 'center', marginBottom: sc(20), borderWidth: 2 },
-  voicePulseInner: { width: sc(72), height: sc(72), borderRadius: sc(36), alignItems: 'center', justifyContent: 'center' },
-  waveContainer: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: sc(3), height: sc(40) },
-  waveBar: { width: sc(3), borderRadius: sc(1.5) },
-
-  controlsGrid: { flexDirection: 'row', gap: sc(10), marginBottom: sc(16) },
-  controlButton: { flex: 1, alignItems: 'center', justifyContent: 'center', borderRadius: sc(16), paddingVertical: sc(18), gap: sc(8), minHeight: 44 },
-  controlLabel: { fontSize: sc(12), fontWeight: '700' },
-
-  endCallButton: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: sc(8), paddingVertical: sc(16), borderRadius: sc(28), minHeight: 52, marginBottom: sc(10) },
-  endCallText: { fontSize: sc(15), fontWeight: '800', letterSpacing: 0.5 },
-  safetyButton: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: sc(6), paddingVertical: sc(12), borderRadius: sc(20), minHeight: 44, borderWidth: 1 },
-  safetyButtonText: { fontSize: sc(12), fontWeight: '700', letterSpacing: 0.5 },
-
-  bgBlur1: { position: 'absolute', top: 0, right: 0, width: W * 0.5, height: W * 0.5, borderRadius: W * 0.25, pointerEvents: 'none' },
-  bgBlur2: { position: 'absolute', bottom: 0, left: 0, width: W * 0.4, height: W * 0.4, borderRadius: W * 0.2, pointerEvents: 'none' },
+  centerArea: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  avatarContainer: {
+    width: sc(120),
+    height: sc(120),
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: sc(16),
+  },
+  pulseRing: {
+    width: sc(140),
+    height: sc(140),
+    borderRadius: 70,
+    borderWidth: 2,
+  },
+  avatar: {
+    width: sc(96),
+    height: sc(96),
+    borderRadius: 48,
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 2,
+  },
+  breathRing: {
+    width: sc(200),
+    height: sc(200),
+    borderRadius: 100,
+    borderWidth: 2,
+    position: 'absolute',
+  },
+  listenerName: {
+    fontSize: sc(18),
+    fontWeight: '700',
+    letterSpacing: -0.3,
+    marginBottom: sc(4),
+  },
+  sessionTimer: {
+    fontSize: sc(28),
+    fontWeight: '800',
+    fontVariant: ['tabular-nums'],
+    marginBottom: sc(24),
+    letterSpacing: -0.5,
+  },
+  breathCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: sc(8),
+    paddingHorizontal: sc(18),
+    paddingVertical: sc(10),
+    borderRadius: sc(20),
+    marginBottom: sc(16),
+  },
+  breathInstruction: {
+    fontSize: sc(14),
+    fontWeight: '600',
+    letterSpacing: 0.5,
+  },
+  statusRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: sc(5),
+    marginTop: sc(8),
+    paddingHorizontal: sc(12),
+    paddingVertical: sc(8),
+    borderRadius: sc(12),
+  },
+  statusText: {
+    fontSize: sc(10),
+    fontWeight: '500',
+    letterSpacing: 0.5,
+  },
+  safetyReportBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: sc(6),
+    paddingHorizontal: sc(18),
+    paddingVertical: sc(10),
+    borderRadius: sc(20),
+    borderWidth: 1,
+    marginTop: sc(12),
+    minHeight: 44,
+  },
+  safetyReportBtnText: {
+    fontSize: sc(12),
+    fontWeight: '700',
+    letterSpacing: 0.3,
+  },
+  endHint: { alignItems: 'center', paddingBottom: sc(8) },
+  endHintText: { fontSize: sc(10), fontWeight: '500' },
+  controlsPanel: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    paddingHorizontal: sc(20),
+    paddingTop: sc(16),
+    borderTopLeftRadius: sc(24),
+    borderTopRightRadius: sc(24),
+    borderTopWidth: 1,
+  },
+  controlsRow: {
+    flexDirection: 'row',
+    gap: sc(10),
+    marginBottom: sc(12),
+  },
+  ctrlButton: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: sc(16),
+    paddingVertical: sc(14),
+    gap: sc(4),
+    minHeight: sc(56),
+  },
+  ctrlLabel: { fontSize: sc(10), fontWeight: '700', letterSpacing: 0.5 },
+  endButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: sc(8),
+    borderRadius: sc(24),
+    paddingVertical: sc(14),
+    minHeight: 52,
+    marginBottom: sc(8),
+  },
+  endButtonText: { fontSize: sc(15), fontWeight: '800', letterSpacing: 0.5 },
+  bgBlob1: {
+    position: 'absolute',
+    top: -sc(60),
+    right: -sc(60),
+    width: sc(200),
+    height: sc(200),
+    borderRadius: sc(100),
+    pointerEvents: 'none',
+  },
+  bgBlob2: {
+    position: 'absolute',
+    bottom: H * 0.3,
+    left: -sc(40),
+    width: sc(160),
+    height: sc(160),
+    borderRadius: sc(80),
+    pointerEvents: 'none',
+  },
 });

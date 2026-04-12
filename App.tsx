@@ -39,6 +39,7 @@ import FAQScreen from './src/screens/FAQScreen';
 import ContactSupportScreen from './src/screens/ContactSupportScreen';
 import LiveChatScreen from './src/screens/LiveChatScreen';
 import ProfileScreen from './src/screens/ProfileScreen';
+import TrustSystemScreen from './src/screens/TrustSystemScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -167,6 +168,9 @@ function ThemedApp() {
           </Stack.Screen>
           <Stack.Screen name="UpdatePIN">
             {(props) => <ThemedScreen {...props} Component={UpdatePINScreen} />}
+          </Stack.Screen>
+          <Stack.Screen name="TrustSystem">
+            {(props) => <ThemedScreen {...props} Component={TrustSystemScreen} />}
           </Stack.Screen>
         </Stack.Navigator>
       </NavigationContainer>
