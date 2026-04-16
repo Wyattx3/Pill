@@ -138,8 +138,6 @@ export default function TrustSystemScreen({ navigation, theme }: any) {
   const [showCompose, setShowCompose] = useState(false);
   const [composeSubject, setComposeSubject] = useState('');
   const [composeBody, setComposeBody] = useState('');
-  const tabSlide = useRef(new Animated.Value(0)).current;
-
   const unreadCount = inboxData.filter((m) => !m.read).length;
 
   const submitCompose = () => {
@@ -150,18 +148,7 @@ export default function TrustSystemScreen({ navigation, theme }: any) {
 
   const switchTab = (tab: 'inbox' | 'cases') => {
     setActiveTab(tab);
-    Animated.spring(tabSlide, {
-      toValue: tab === 'cases' ? 1 : 0,
-      useNativeDriver: true,
-      damping: 20,
-      stiffness: 200,
-    }).start();
   };
-
-  const indicatorTranslate = tabSlide.interpolate({
-    inputRange: [0, 1],
-    outputRange: [0, (W - sc(36) * 2 - sc(6)) / 2],
-  });
 
   return (
     <View style={[styles.root, { backgroundColor: colors.background }]}>
@@ -187,9 +174,8 @@ export default function TrustSystemScreen({ navigation, theme }: any) {
 
       {/* ── Segmented Tabs ── */}
       <View style={[styles.segWrap, { backgroundColor: colors.surfaceContainerLow }]}>
-        <Animated.View style={[styles.segIndicator, { backgroundColor: colors.primary, transform: [{ translateX: indicatorTranslate }] }]} />
         <TouchableOpacity
-          style={[styles.segTab, activeTab === 'inbox' && styles.segTabActive]}
+          style={[styles.segTab, activeTab === 'inbox' && { backgroundColor: colors.primary, borderRadius: sc(11) }]}
           onPress={() => switchTab('inbox')}
           activeOpacity={0.8}
         >
@@ -197,9 +183,14 @@ export default function TrustSystemScreen({ navigation, theme }: any) {
           <Text style={[styles.segText, { color: activeTab === 'inbox' ? colors.onPrimary : colors.onSurfaceVariant }]}>
             Inbox
           </Text>
+          {unreadCount > 0 && (
+            <View style={[styles.segBadge, { backgroundColor: colors.error }]}>
+              <Text style={styles.segBadgeText}>{unreadCount}</Text>
+            </View>
+          )}
         </TouchableOpacity>
         <TouchableOpacity
-          style={[styles.segTab, activeTab === 'cases' && styles.segTabActive]}
+          style={[styles.segTab, activeTab === 'cases' && { backgroundColor: colors.primary, borderRadius: sc(11) }]}
           onPress={() => switchTab('cases')}
           activeOpacity={0.8}
         >
@@ -207,6 +198,11 @@ export default function TrustSystemScreen({ navigation, theme }: any) {
           <Text style={[styles.segText, { color: activeTab === 'cases' ? colors.onPrimary : colors.onSurfaceVariant }]}>
             Cases
           </Text>
+          {caseData.some((c) => c.status === 'open') && (
+            <View style={[styles.segBadge, { backgroundColor: '#4CAF50' }]}>
+              <Text style={styles.segBadgeText}>!</Text>
+            </View>
+          )}
         </TouchableOpacity>
       </View>
 
@@ -469,11 +465,11 @@ const styles = StyleSheet.create({
   unreadBadgeText: { fontSize: sc(10), fontWeight: '700', color: '#fff' },
 
   // Segmented tabs
-  segWrap: { flexDirection: 'row', borderRadius: sc(14), marginHorizontal: sc(18), marginVertical: sc(8), padding: sc(3), position: 'relative', overflow: 'hidden' },
-  segIndicator: { position: 'absolute', top: sc(3), left: sc(3), width: (W - sc(36) * 2 - sc(6)) / 2, height: '100%', borderRadius: sc(12) },
-  segTab: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: sc(6), flex: 1, borderRadius: sc(12), paddingVertical: sc(8), zIndex: 1 },
-  segTabActive: { backgroundColor: 'transparent' },
+  segWrap: { flexDirection: 'row', borderRadius: sc(14), marginHorizontal: sc(18), marginTop: sc(12), marginBottom: sc(8), padding: sc(3), gap: sc(3) },
+  segTab: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: sc(6), flex: 1, borderRadius: sc(12), paddingVertical: sc(10), paddingHorizontal: sc(14) },
   segText: { fontSize: sc(12), fontWeight: '700', letterSpacing: 0.5 },
+  segBadge: { position: 'absolute', top: sc(4), right: sc(8), minWidth: sc(16), height: sc(16), borderRadius: sc(8), alignItems: 'center', justifyContent: 'center', paddingHorizontal: sc(4) },
+  segBadgeText: { fontSize: sc(9), fontWeight: '700', color: '#fff' },
 
   // Content area
   contentArea: { flex: 1 },

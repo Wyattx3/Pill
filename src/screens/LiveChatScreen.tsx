@@ -21,7 +21,7 @@ const botResponses: Record<string, string> = {
   'deactivate': "You can deactivate your account in Settings > Account > Deactivate. Your data will be preserved for 30 days. Want me to walk you through it?",
   'thanks': "You're welcome! Is there anything else I can help you with?",
   'thank you': "Happy to help! Anything else you need?",
-  'bye': "Take care! Remember, we're here whenever you need support. 🌿",
+  'bye': "Take care! Remember, we're here whenever you need support.",
   'help': "I can assist with: Earnings & Payouts, Account Issues, Listener Setup, Bug Reports, Safety Concerns, and more. Just type your question!",
   'human': "Connecting you to a human agent now... Please wait, an agent will be with you shortly. Estimated wait time: 2-5 minutes.",
   'agent': "Sure! I'm escalating this to a human agent. You'll be connected shortly.",
@@ -54,7 +54,6 @@ export default function LiveChatScreen({ navigation, route, theme }: any) {
   const [agentConnected, setAgentConnected] = useState(false);
   const flatListRef = useRef<FlatList>(null);
 
-  // Initial greeting
   useEffect(() => {
     if (messages.length === 0) {
       setTimeout(() => {
@@ -96,7 +95,6 @@ export default function LiveChatScreen({ navigation, route, theme }: any) {
     const currentInput = inputText.trim();
     setInputText('');
 
-    // Bot response
     setIsTyping(true);
     setTimeout(() => {
       setIsTyping(false);
@@ -133,6 +131,8 @@ export default function LiveChatScreen({ navigation, route, theme }: any) {
 
   const renderMessage = ({ item }: { item: Message }) => {
     const isUser = item.sender === 'user';
+    const timeStr = item.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
     return (
       <View style={[styles.msgRow, isUser ? styles.msgRowUser : styles.msgRowBot]}>
         {!isUser && (
@@ -145,12 +145,14 @@ export default function LiveChatScreen({ navigation, route, theme }: any) {
           </View>
         )}
         <View style={[styles.msgBubble, { backgroundColor: isUser ? colors.primary : colors.surfaceContainerLow }]}>
+          {!isUser && (
+            <Text style={[styles.msgSender, { color: colors.primary }]}>
+              {item.sender === 'bot' ? 'AI Assistant' : 'Agent'}
+            </Text>
+          )}
           <Text style={[styles.msgText, { color: isUser ? colors.onPrimary : colors.onSurface }]}>{item.text}</Text>
-          <Text style={[styles.msgTime, { color: isUser ? colors.onPrimary + '99' : colors.onSurfaceVariant }]}>
-            {item.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-          </Text>
+          <Text style={[styles.msgTime, { color: isUser ? colors.onPrimary + '99' : colors.onSurfaceVariant }]}>{timeStr}</Text>
         </View>
-        {isUser && <View style={styles.msgSpacer} />}
       </View>
     );
   };
@@ -161,6 +163,7 @@ export default function LiveChatScreen({ navigation, route, theme }: any) {
         <Ionicons name="hardware-chip" size={sc(14)} color={colors.primary} />
       </View>
       <View style={[styles.msgBubble, { backgroundColor: colors.surfaceContainerLow }]}>
+        <Text style={[styles.msgSender, { color: colors.primary }]}>AI Assistant</Text>
         <View style={styles.typingDots}>
           <View style={[styles.dot, { backgroundColor: colors.onSurfaceVariant }]} />
           <View style={[styles.dot, styles.dotMiddle, { backgroundColor: colors.onSurfaceVariant }]} />
@@ -173,15 +176,15 @@ export default function LiveChatScreen({ navigation, route, theme }: any) {
   return (
     <KeyboardAvoidingView
       style={{ flex: 1, backgroundColor: colors.background }}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      keyboardVerticalOffset={insets.bottom + 60}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
     >
       <StatusBar style={isDark ? 'light' : 'dark'} />
 
       {/* Top Bar */}
-      <View style={[styles.topBar, { paddingTop: Math.max(insets.top, 8), backgroundColor: colors.surface + 'E6' }]}>
+      <View style={[styles.topBar, { paddingTop: Math.max(insets.top, sc(8)), backgroundColor: colors.surface + 'E6', borderBottomColor: colors.outlineVariant + '22' }]}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={[styles.backButton, { backgroundColor: colors.surfaceContainerLow }]} activeOpacity={0.5}>
-          <Ionicons name="arrow-back" size={sc(22)} color={colors.onSurface} />
+          <Ionicons name="arrow-back" size={sc(20)} color={colors.onSurface} />
         </TouchableOpacity>
         <View style={styles.chatHeaderInfo}>
           <View style={styles.chatHeaderLeft}>
@@ -191,7 +194,7 @@ export default function LiveChatScreen({ navigation, route, theme }: any) {
             <View>
               <Text style={[styles.chatTitle, { color: colors.onSurface }]}>Sanctuary Support</Text>
               <Text style={[styles.chatStatus, { color: agentConnected ? '#4CAF50' : colors.onSurfaceVariant }]}>
-                {agentConnected ? 'Agent connected' : 'AI Assistant • Online'}
+                {agentConnected ? 'Agent connected' : 'AI Assistant \u2022 Online'}
               </Text>
             </View>
           </View>
@@ -208,13 +211,13 @@ export default function LiveChatScreen({ navigation, route, theme }: any) {
         keyExtractor={item => item.id}
         renderItem={renderMessage}
         ListFooterComponent={isTyping ? renderTypingIndicator : null}
-        contentContainerStyle={styles.msgList}
+        contentContainerStyle={{ paddingHorizontal: sc(14), paddingVertical: sc(10) }}
         onContentSizeChange={() => flatListRef.current?.scrollToEnd({ animated: true })}
       />
 
       {/* Quick Replies */}
       {!agentConnected && messages.length < 4 && (
-        <View style={[styles.quickReplies, { backgroundColor: colors.surface + 'E6' }]}>
+        <View style={[styles.quickReplies, { backgroundColor: colors.background }]}>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.quickRepliesInner}>
             {quickReplies.map((reply, i) => (
               <TouchableOpacity
@@ -231,9 +234,9 @@ export default function LiveChatScreen({ navigation, route, theme }: any) {
       )}
 
       {/* Input Bar */}
-      <View style={[styles.inputBar, { backgroundColor: colors.surface + 'E6', borderTopColor: colors.outlineVariant + '22', paddingBottom: Math.max(insets.bottom, 8) }]}>
+      <View style={[styles.inputBar, { backgroundColor: colors.surface + 'E6', borderTopColor: colors.outlineVariant + '22', paddingBottom: Math.max(insets.bottom, sc(8)), paddingTop: sc(8) }]}>
         <TextInput
-          style={[styles.textInput, { backgroundColor: colors.surfaceContainerHigh, color: colors.onSurface }]}
+          style={[styles.textInput, { backgroundColor: colors.surfaceContainerLowest, color: colors.onSurface, borderColor: colors.outlineVariant + '33' }]}
           placeholder="Type a message..."
           placeholderTextColor={colors.onSurfaceVariant + '66'}
           value={inputText}
@@ -259,7 +262,7 @@ export default function LiveChatScreen({ navigation, route, theme }: any) {
 }
 
 const styles = StyleSheet.create({
-  topBar: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: sc(12), paddingBottom: sc(8) },
+  topBar: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: sc(12), paddingBottom: sc(8), borderBottomWidth: 1 },
   backButton: { width: sc(34), height: sc(34), borderRadius: sc(17), alignItems: 'center', justifyContent: 'center' },
   closeButton: { width: sc(34), height: sc(34), borderRadius: sc(17), alignItems: 'center', justifyContent: 'center' },
   chatHeaderInfo: { flex: 1 },
@@ -268,15 +271,14 @@ const styles = StyleSheet.create({
   chatTitle: { fontSize: sc(14), fontWeight: '700' },
   chatStatus: { fontSize: sc(10), marginTop: 1 },
 
-  msgList: { paddingHorizontal: sc(12), paddingVertical: sc(8), flexGrow: 1 },
-  msgRow: { flexDirection: 'row', alignItems: 'flex-end', marginBottom: sc(8), maxWidth: '100%' },
+  msgRow: { marginBottom: sc(6), flexDirection: 'row', alignItems: 'flex-end', width: '100%' },
   msgRowUser: { justifyContent: 'flex-end' },
   msgRowBot: { justifyContent: 'flex-start' },
-  msgAvatar: { width: sc(26), height: sc(26), borderRadius: sc(13), alignItems: 'center', justifyContent: 'center', marginRight: sc(6), marginBottom: sc(2) },
-  msgBubble: { borderRadius: sc(16), paddingHorizontal: sc(14), paddingVertical: sc(8), maxWidth: '75%', minWidth: sc(60) },
-  msgText: { fontSize: sc(13), lineHeight: sc(18) },
-  msgTime: { fontSize: sc(9), marginTop: sc(2), alignSelf: 'flex-end' },
-  msgSpacer: { width: sc(26), marginRight: sc(6), marginBottom: sc(2) },
+  msgAvatar: { width: sc(24), height: sc(24), borderRadius: sc(12), alignItems: 'center', justifyContent: 'center', marginRight: sc(8), flexShrink: 0, marginBottom: sc(18) },
+  msgBubble: { borderRadius: sc(16), paddingHorizontal: sc(12), paddingVertical: sc(8), maxWidth: '75%' },
+  msgSender: { fontSize: sc(10), fontWeight: '700', marginBottom: sc(2) },
+  msgText: { fontSize: sc(14), lineHeight: sc(20) },
+  msgTime: { fontSize: sc(9), marginTop: sc(4), opacity: 0.6, textAlign: 'right' },
 
   typingDots: { flexDirection: 'row', alignItems: 'center', gap: sc(4), paddingVertical: sc(4) },
   dot: { width: sc(6), height: sc(6), borderRadius: sc(3) },
@@ -287,7 +289,7 @@ const styles = StyleSheet.create({
   quickReplyBtn: { paddingHorizontal: sc(14), paddingVertical: sc(7), borderRadius: sc(20), borderWidth: 1 },
   quickReplyText: { fontSize: sc(11), fontWeight: '600' },
 
-  inputBar: { flexDirection: 'row', alignItems: 'flex-end', paddingHorizontal: sc(10), paddingVertical: sc(8), borderTopWidth: 1, gap: sc(8) },
-  textInput: { flex: 1, borderRadius: sc(24), paddingHorizontal: sc(16), paddingVertical: sc(10), fontSize: sc(13), maxHeight: sc(100), minHeight: sc(40) },
-  sendButton: { width: sc(40), height: sc(40), borderRadius: sc(20), alignItems: 'center', justifyContent: 'center', marginBottom: sc(2) },
+  inputBar: { flexDirection: 'row', alignItems: 'flex-end', paddingHorizontal: sc(10), borderTopWidth: 1, gap: sc(8) },
+  textInput: { flex: 1, borderRadius: sc(24), borderWidth: 1, paddingHorizontal: sc(16), paddingVertical: sc(10), fontSize: sc(13), maxHeight: sc(100), minHeight: sc(40) },
+  sendButton: { width: sc(40), height: sc(40), borderRadius: sc(20), alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginBottom: sc(4) },
 });

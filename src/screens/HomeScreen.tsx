@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Dimensions } from
 import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import BottomNav from '../components/BottomNav';
 
 const { width: W } = Dimensions.get('window');
 const sc = (v: number) => Math.round(v * (W / 390));
@@ -97,21 +98,7 @@ export default function HomeScreen({ navigation, theme }: any) {
         </View>
       </ScrollView>
 
-      {/* Bottom Navigation - absolute, below content */}
-      <View style={[styles.bottomNav, { paddingBottom: Math.max(insets.bottom, 12), paddingTop: sc(8), backgroundColor: colors.surface + 'E6', borderTopColor: colors.outlineVariant + '22' }]}>
-        <TouchableOpacity style={[styles.navItemActive, { backgroundColor: colors.primaryFixed }]} activeOpacity={0.5}>
-          <Ionicons name="home" size={sc(22)} color={colors.primary} />
-          <Text style={[styles.navLabelActive, { color: colors.primary }]}>Home</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('SafetyCenter')} activeOpacity={0.5}>
-          <Ionicons name="shield-outline" size={sc(22)} color={colors.onSurfaceVariant} />
-          <Text style={[styles.navLabel, { color: colors.onSurfaceVariant }]}>Safety</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('Settings')} activeOpacity={0.5}>
-          <Ionicons name="settings-outline" size={sc(22)} color={colors.onSurfaceVariant} />
-          <Text style={[styles.navLabel, { color: colors.onSurfaceVariant }]}>Settings</Text>
-        </TouchableOpacity>
-      </View>
+      <BottomNav navigation={navigation} activeScreen="Home" theme={theme} />
     </View>
   );
 }
@@ -143,7 +130,6 @@ const styles = StyleSheet.create({
   bentoTitle: { fontSize: sc(13), fontWeight: '700' },
   bentoDangerTitle: { fontSize: sc(13), fontWeight: '700' },
   bentoDesc: { fontSize: sc(10), marginTop: sc(2) },
-  bottomNav: { flexDirection: 'row', justifyContent: 'space-around', alignItems: 'center', paddingHorizontal: sc(12), borderTopLeftRadius: sc(32), borderTopRightRadius: sc(32), borderTopWidth: 1 },
   navItem: { alignItems: 'center', paddingVertical: sc(6), paddingHorizontal: sc(20), borderRadius: sc(20), minHeight: 44, justifyContent: 'center' },
   navItemActive: { alignItems: 'center', paddingVertical: sc(6), paddingHorizontal: sc(20), borderRadius: sc(20), minHeight: 44, justifyContent: 'center' },
   navLabel: { fontSize: sc(10), fontWeight: '600', marginTop: 2 },

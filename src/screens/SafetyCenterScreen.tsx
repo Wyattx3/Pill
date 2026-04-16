@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Image, Linking, D
 import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import BottomNav from '../components/BottomNav';
 
 const { width: W } = Dimensions.get('window');
 const sc = (v: number) => Math.round(v * (W / 390));
@@ -39,32 +40,37 @@ export default function SafetyCenterScreen({ navigation, theme }: any) {
         <Text style={[styles.heroDesc, { color: colors.onSurfaceVariant }]}>We're here to ensure every connection remains a safe space. Whether you need immediate help or want to learn about our community standards, you're in the right place.</Text>
 
         {/* Emergency Grid */}
-        <View style={styles.emergencyGrid}>
-          <View style={[styles.crisisCard, { backgroundColor: colors.errorContainer + '1A', borderLeftColor: colors.error }]}>
-            <View style={styles.crisisHeader}>
-              <Ionicons name="home" size={sc(16)} color={colors.error} />
-              <Text style={[styles.crisisLabel, { color: colors.error }]}>CRISIS ASSISTANCE</Text>
+        <View style={[styles.crisisCard, { backgroundColor: colors.errorContainer + '1A', borderLeftColor: colors.error }]}>
+          <View style={styles.crisisHeader}>
+            <Ionicons name="home" size={sc(16)} color={colors.error} />
+            <Text style={[styles.crisisLabel, { color: colors.error }]}>CRISIS ASSISTANCE</Text>
+          </View>
+          <Text style={[styles.crisisTitle, { color: colors.onErrorContainer }]}>In Immediate Danger?</Text>
+          <Text style={[styles.crisisDesc, { color: colors.onErrorContainer + 'CC' }]}>If you or someone else is in immediate danger, please contact local emergency services.</Text>
+          <View style={styles.crisisActions}>
+            <TouchableOpacity style={[styles.crisisCall, { backgroundColor: colors.error }]} onPress={() => Linking.openURL('tel:988')} activeOpacity={0.8}>
+              <Ionicons name="call" size={sc(14)} color="#fff" />
+              <Text style={styles.crisisCallText}>Call 988</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={[styles.crisisTextBtn, { backgroundColor: colors.surface }]} onPress={() => Linking.openURL('sms:988')} activeOpacity={0.8}>
+              <Ionicons name="chatbubble" size={sc(14)} color={colors.onErrorContainer} />
+              <Text style={[styles.crisisTextBtnLabel, { color: colors.onErrorContainer }]}>Text Crisis Line</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        <TouchableOpacity style={[styles.trustCard, { backgroundColor: colors.primaryContainer + '33' }]} onPress={() => navigation.navigate('TrustSystem')} activeOpacity={0.8}>
+          <View style={styles.trustCardInner}>
+            <View style={[styles.trustCardIcon, { backgroundColor: colors.primaryFixed }]}>
+              <Ionicons name="notifications" size={sc(22)} color={colors.primary} />
             </View>
-            <Text style={[styles.crisisTitle, { color: colors.onErrorContainer }]}>In Immediate Danger?</Text>
-            <Text style={[styles.crisisDesc, { color: colors.onErrorContainer + 'CC' }]}>If you or someone else is in immediate danger, please contact local emergency services.</Text>
-            <View style={styles.crisisActions}>
-              <TouchableOpacity style={[styles.crisisCall, { backgroundColor: colors.error }]} onPress={() => Linking.openURL('tel:988')} activeOpacity={0.8}>
-                <Ionicons name="call" size={sc(14)} color="#fff" />
-                <Text style={styles.crisisCallText}>Call 988</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={[styles.crisisTextBtn, { backgroundColor: colors.surface }]} onPress={() => Linking.openURL('sms:988')} activeOpacity={0.8}>
-                <Ionicons name="chatbubble" size={sc(14)} color={colors.onErrorContainer} />
-                <Text style={[styles.crisisTextBtnLabel, { color: colors.onErrorContainer }]}>Text Crisis Line</Text>
-              </TouchableOpacity>
+            <View style={styles.trustCardText}>
+              <Text style={[styles.trustTitle, { color: colors.primary }]}>Noti Inbox</Text>
+              <Text style={[styles.trustDesc, { color: colors.onSurfaceVariant }]}>Check your notifications and alerts here.</Text>
+              <Text style={[styles.trustLink, { color: colors.primary }]}>How it works <Ionicons name="arrow-forward" size={sc(12)} color={colors.primary} /></Text>
             </View>
           </View>
-          <TouchableOpacity style={[styles.trustCard, { backgroundColor: colors.primaryContainer + '33' }]} onPress={() => navigation.navigate('TrustSystem')} activeOpacity={0.8}>
-            <Ionicons name="shield-checkmark" size={sc(28)} color={colors.primary} />
-            <Text style={[styles.trustTitle, { color: colors.primary }]}>Trust System</Text>
-            <Text style={[styles.trustDesc, { color: colors.onSurfaceVariant }]}>Learn how we keep our community kind through peer verification.</Text>
-            <Text style={[styles.trustLink, { color: colors.primary }]}>How it works <Ionicons name="arrow-forward" size={sc(12)} color={colors.primary} /></Text>
-          </TouchableOpacity>
-        </View>
+        </TouchableOpacity>
 
         {/* Resources */}
         <View style={styles.resourcesHeader}>
@@ -111,36 +117,21 @@ export default function SafetyCenterScreen({ navigation, theme }: any) {
         </View>
       </ScrollView>
 
-      {/* Bottom Navigation */}
-      <View style={[styles.bottomNav, { paddingBottom: Math.max(insets.bottom, 8), backgroundColor: colors.surface + 'E6', borderTopColor: colors.outlineVariant + '22' }]}>
-        <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('Home')} activeOpacity={0.5}>
-          <Ionicons name="home-outline" size={sc(22)} color={colors.onSurfaceVariant} />
-          <Text style={[styles.navLabel, { color: colors.onSurfaceVariant }]}>Home</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={[styles.navItemActive, { backgroundColor: colors.primaryFixed }]} activeOpacity={0.5}>
-          <Ionicons name="shield" size={sc(22)} color={colors.primary} />
-          <Text style={[styles.navLabelActive, { color: colors.primary }]}>Safety</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('Settings')} activeOpacity={0.5}>
-          <Ionicons name="settings-outline" size={sc(22)} color={colors.onSurfaceVariant} />
-          <Text style={[styles.navLabel, { color: colors.onSurfaceVariant }]}>Settings</Text>
-        </TouchableOpacity>
-      </View>
+      <BottomNav navigation={navigation} activeScreen="SafetyCenter" theme={theme} />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  topBar: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: sc(18), paddingBottom: sc(10) },
-  brand: { flexDirection: 'row', alignItems: 'center', gap: 5 },
-  brandText: { fontSize: sc(16), fontWeight: '800', letterSpacing: -0.5 },
+  topBar: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: sc(20), paddingBottom: sc(12) },
+  brand: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  brandText: { fontSize: sc(17), fontWeight: '800', letterSpacing: -0.5 },
   quickExit: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: sc(10), paddingVertical: 5, borderRadius: sc(26) },
   quickExitText: { fontSize: sc(9), fontWeight: '700', letterSpacing: 0.5 },
-  scrollContent: { paddingHorizontal: sc(18), paddingTop: sc(8), paddingBottom: sc(100) },
+  scrollContent: { paddingHorizontal: sc(20), paddingTop: sc(8), paddingBottom: sc(100) },
   heroTitle: { fontSize: sc(28), fontWeight: '800', lineHeight: sc(34), letterSpacing: -0.5, marginBottom: sc(10) },
   heroDesc: { fontSize: sc(13), lineHeight: sc(20), marginBottom: sc(28) },
-  emergencyGrid: { flexDirection: 'row', gap: sc(10), marginBottom: sc(32) },
-  crisisCard: { flex: 2, borderRadius: sc(12), padding: sc(20), borderLeftWidth: 4 },
+  crisisCard: { borderRadius: sc(12), padding: sc(20), borderLeftWidth: 4, marginBottom: sc(10) },
   crisisHeader: { flexDirection: 'row', alignItems: 'center', gap: 5, marginBottom: sc(10) },
   crisisLabel: { fontSize: sc(10), fontWeight: '700', letterSpacing: 1.5 },
   crisisTitle: { fontSize: sc(18), fontWeight: '700', marginBottom: sc(6) },
@@ -150,9 +141,12 @@ const styles = StyleSheet.create({
   crisisCallText: { color: '#fff', fontWeight: '700', fontSize: sc(12) },
   crisisTextBtn: { flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: sc(14), paddingVertical: 8, borderRadius: sc(26), minHeight: 40, justifyContent: 'center' },
   crisisTextBtnLabel: { fontWeight: '700', fontSize: sc(12) },
-  trustCard: { flex: 1, borderRadius: sc(12), padding: sc(18), justifyContent: 'center' },
-  trustTitle: { fontSize: sc(14), fontWeight: '700', marginBottom: sc(6) },
-  trustDesc: { fontSize: sc(11), lineHeight: sc(16), marginBottom: sc(10) },
+  trustCard: { borderRadius: sc(12), padding: sc(16), marginBottom: sc(24) },
+  trustCardInner: { flexDirection: 'row', alignItems: 'flex-start', gap: sc(12) },
+  trustCardIcon: { width: sc(40), height: sc(40), borderRadius: sc(20), alignItems: 'center', justifyContent: 'center' },
+  trustCardText: { flex: 1 },
+  trustTitle: { fontSize: sc(14), fontWeight: '700', marginBottom: sc(4) },
+  trustDesc: { fontSize: sc(11), lineHeight: sc(16), marginBottom: sc(8) },
   trustLink: { fontSize: sc(11), fontWeight: '700' },
   resourcesHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: sc(16) },
   resourcesTitle: { fontSize: sc(18), fontWeight: '700' },
@@ -174,9 +168,4 @@ const styles = StyleSheet.create({
   faqButtons: { flexDirection: 'row', gap: sc(10) },
   faqButton: { paddingHorizontal: sc(18), paddingVertical: 7, borderRadius: sc(26), minHeight: 36, justifyContent: 'center' },
   faqButtonText: { fontSize: sc(12), fontWeight: '600' },
-  bottomNav: { flexDirection: 'row', justifyContent: 'space-around', alignItems: 'center', paddingHorizontal: sc(10), paddingTop: sc(10), borderTopLeftRadius: sc(32), borderTopRightRadius: sc(32), borderTopWidth: 1 },
-  navItem: { alignItems: 'center', paddingVertical: sc(6), paddingHorizontal: sc(18), borderRadius: sc(20), minHeight: 44, justifyContent: 'center' },
-  navItemActive: { alignItems: 'center', paddingVertical: sc(6), paddingHorizontal: sc(18), borderRadius: sc(20), minHeight: 44, justifyContent: 'center' },
-  navLabel: { fontSize: sc(10), fontWeight: '600', marginTop: 2 },
-  navLabelActive: { fontSize: sc(10), fontWeight: '600', marginTop: 2 },
 });

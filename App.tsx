@@ -61,6 +61,7 @@ function LoadingScreen() {
 }
 
 function ThemedApp() {
+  const theme = useTheme();
   return (
     <SafeAreaProvider>
       <NavigationContainer>
@@ -68,15 +69,11 @@ function ThemedApp() {
           initialRouteName="Onboarding"
           screenOptions={{
             headerShown: false,
-            animation: 'slide_from_right',
-            animationDuration: 300,
+            animation: 'none',
             gestureEnabled: true,
             gestureDirection: 'horizontal',
             presentation: 'card',
-            contentStyle: {
-              backgroundColor: Colors.surface,
-            },
-            navigationBarColor: Colors.surface,
+            navigationBarColor: theme.colors.surface,
           }}
         >
           <Stack.Screen name="PasscodeEntry">

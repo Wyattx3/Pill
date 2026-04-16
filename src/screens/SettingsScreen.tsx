@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Switch, Dimension
 import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import BottomNav from '../components/BottomNav';
 
 const { width: W } = Dimensions.get('window');
 const sc = (v: number) => Math.round(v * (W / 390));
@@ -78,21 +79,7 @@ export default function SettingsScreen({ navigation, theme }: any) {
         <Text style={[styles.version, { color: colors.outline }]}>Pill v2.4.0 • Secure & Encrypted</Text>
       </ScrollView>
 
-      {/* Bottom Navigation - fixed below ScrollView */}
-      <View style={[styles.bottomNav, { paddingBottom: Math.max(insets.bottom, 8), paddingTop: sc(8), backgroundColor: colors.surface + 'E6', borderTopColor: colors.outlineVariant + '22' }]}>
-        <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('Home')} activeOpacity={0.5}>
-          <Ionicons name="home-outline" size={sc(22)} color={colors.onSurfaceVariant} />
-          <Text style={[styles.navLabel, { color: colors.onSurfaceVariant }]}>Home</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('SafetyCenter')} activeOpacity={0.5}>
-          <Ionicons name="shield-outline" size={sc(22)} color={colors.onSurfaceVariant} />
-          <Text style={[styles.navLabel, { color: colors.onSurfaceVariant }]}>Safety</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={[styles.navItemActive, { backgroundColor: colors.primaryFixed }]} activeOpacity={0.5}>
-          <Ionicons name="settings" size={sc(22)} color={colors.primary} />
-          <Text style={[styles.navLabelActive, { color: colors.primary }]}>Settings</Text>
-        </TouchableOpacity>
-      </View>
+      <BottomNav navigation={navigation} activeScreen="Settings" theme={theme} />
     </View>
   );
 }
@@ -119,9 +106,4 @@ const styles = StyleSheet.create({
   zeroDataRow: { borderRadius: sc(12), padding: sc(16), marginBottom: sc(20), marginHorizontal: sc(20) },
   policyText: { fontSize: sc(12), lineHeight: sc(18), paddingHorizontal: sc(6) },
   version: { fontSize: sc(9), fontWeight: '700', textTransform: 'uppercase', letterSpacing: 3, opacity: 0.5, textAlign: 'center', marginBottom: sc(20) },
-  bottomNav: { flexDirection: 'row', justifyContent: 'space-around', alignItems: 'center', paddingHorizontal: sc(12), borderTopLeftRadius: sc(32), borderTopRightRadius: sc(32), borderTopWidth: 1 },
-  navItem: { alignItems: 'center', paddingVertical: sc(6), paddingHorizontal: sc(20), borderRadius: sc(20), minHeight: 44, justifyContent: 'center' },
-  navItemActive: { alignItems: 'center', paddingVertical: sc(6), paddingHorizontal: sc(20), borderRadius: sc(20), minHeight: 44, justifyContent: 'center' },
-  navLabel: { fontSize: sc(10), fontWeight: '600', marginTop: 2 },
-  navLabelActive: { fontSize: sc(10), fontWeight: '600', marginTop: 2 },
 });
