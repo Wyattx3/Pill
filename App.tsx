@@ -40,6 +40,16 @@ import ContactSupportScreen from './src/screens/ContactSupportScreen';
 import LiveChatScreen from './src/screens/LiveChatScreen';
 import ProfileScreen from './src/screens/ProfileScreen';
 import TrustSystemScreen from './src/screens/TrustSystemScreen';
+import DonationsOnboardingScreen from './src/screens/DonationsOnboardingScreen';
+import DonationsFeedScreen from './src/screens/DonationsFeedScreen';
+import DonationPostDetailScreen from './src/screens/DonationPostDetailScreen';
+import DonateScreen from './src/screens/DonateScreen';
+import DonationHistoryScreen from './src/screens/DonationHistoryScreen';
+import CreateFundraiserScreen from './src/screens/CreateFundraiserScreen';
+import GiftTiersScreen from './src/screens/GiftTiersScreen';
+import VerificationTypeScreen from './src/screens/VerificationTypeScreen';
+import IndividualVerificationScreen from './src/screens/IndividualVerificationScreen';
+import OrganizationVerificationScreen from './src/screens/OrganizationVerificationScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -168,6 +178,36 @@ function ThemedApp() {
           </Stack.Screen>
           <Stack.Screen name="TrustSystem">
             {(props) => <ThemedScreen {...props} Component={TrustSystemScreen} />}
+          </Stack.Screen>
+          <Stack.Screen name="DonationsOnboarding">
+            {(props) => <ThemedScreen {...props} Component={DonationsOnboardingScreen} />}
+          </Stack.Screen>
+          <Stack.Screen name="DonationsFeed">
+            {(props) => <ThemedScreen {...props} Component={DonationsFeedScreen} />}
+          </Stack.Screen>
+          <Stack.Screen name="DonationPostDetail">
+            {(props) => <ThemedScreen {...props} Component={DonationPostDetailScreen} />}
+          </Stack.Screen>
+          <Stack.Screen name="DonateScreen">
+            {(props) => <ThemedScreen {...props} Component={DonateScreen} />}
+          </Stack.Screen>
+          <Stack.Screen name="DonationHistory">
+            {(props) => <ThemedScreen {...props} Component={DonationHistoryScreen} />}
+          </Stack.Screen>
+          <Stack.Screen name="CreateFundraiser">
+            {(props) => <ThemedScreen {...props} Component={CreateFundraiserScreen} />}
+          </Stack.Screen>
+          <Stack.Screen name="GiftTiers">
+            {(props) => <ThemedScreen {...props} Component={GiftTiersScreen} />}
+          </Stack.Screen>
+          <Stack.Screen name="VerificationType">
+            {(props) => <ThemedScreen {...props} Component={VerificationTypeScreen} />}
+          </Stack.Screen>
+          <Stack.Screen name="IndividualVerification">
+            {(props) => <ThemedScreen {...props} Component={IndividualVerificationScreen} />}
+          </Stack.Screen>
+          <Stack.Screen name="OrganizationVerification">
+            {(props) => <ThemedScreen {...props} Component={OrganizationVerificationScreen} />}
           </Stack.Screen>
         </Stack.Navigator>
       </NavigationContainer>
