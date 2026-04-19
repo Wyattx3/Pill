@@ -50,6 +50,19 @@ import GiftTiersScreen from './src/screens/GiftTiersScreen';
 import VerificationTypeScreen from './src/screens/VerificationTypeScreen';
 import IndividualVerificationScreen from './src/screens/IndividualVerificationScreen';
 import OrganizationVerificationScreen from './src/screens/OrganizationVerificationScreen';
+import OrgDocumentsUploadScreen from './src/screens/OrgDocumentsUploadScreen';
+import MyFundraiserScreen from './src/screens/MyFundraiserScreen';
+
+import FundraiserEditScreen from './src/screens/FundraiserEditScreen';
+import MyFundraiserAuthScreen from './src/screens/MyFundraiserAuthScreen';
+import CommentReplyScreen from './src/screens/CommentReplyScreen';
+import PayoutScreen from './src/screens/PayoutScreen';
+
+import ProfileSettingsScreen from './src/screens/ProfileSettingsScreen';
+import EditDisplayNameScreen from './src/screens/EditDisplayNameScreen';
+import EditEmailScreen from './src/screens/EditEmailScreen';
+import EditPhoneScreen from './src/screens/EditPhoneScreen';
+import PaymentSetupScreen from './src/screens/PaymentSetupScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -208,6 +221,40 @@ function ThemedApp() {
           </Stack.Screen>
           <Stack.Screen name="OrganizationVerification">
             {(props) => <ThemedScreen {...props} Component={OrganizationVerificationScreen} />}
+          </Stack.Screen>
+          <Stack.Screen name="OrgDocumentsUpload">
+            {(props) => <ThemedScreen {...props} Component={OrgDocumentsUploadScreen} />}
+          </Stack.Screen>
+          <Stack.Screen name="MyFundraiserAuth">
+            {(props) => <ThemedScreen {...props} Component={MyFundraiserAuthScreen} />}
+          </Stack.Screen>
+          <Stack.Screen name="CommentReply">
+            {(props) => <ThemedScreen {...props} Component={CommentReplyScreen} />}
+          </Stack.Screen>
+          <Stack.Screen name="Payout">
+            {(props) => <ThemedScreen {...props} Component={PayoutScreen} />}
+          </Stack.Screen>
+
+          <Stack.Screen name="ProfileSettings">
+            {(props) => <ThemedScreen {...props} Component={ProfileSettingsScreen} />}
+          </Stack.Screen>
+          <Stack.Screen name="EditDisplayName">
+            {(props) => <ThemedScreen {...props} Component={EditDisplayNameScreen} />}
+          </Stack.Screen>
+          <Stack.Screen name="EditEmail">
+            {(props) => <ThemedScreen {...props} Component={EditEmailScreen} />}
+          </Stack.Screen>
+          <Stack.Screen name="EditPhone">
+            {(props) => <ThemedScreen {...props} Component={EditPhoneScreen} />}
+          </Stack.Screen>
+          <Stack.Screen name="PaymentSetup">
+            {(props) => <ThemedScreen {...props} Component={PaymentSetupScreen} />}
+          </Stack.Screen>
+          <Stack.Screen name="MyFundraiser">
+            {(props) => <ThemedScreen {...props} Component={MyFundraiserScreen} />}
+          </Stack.Screen>
+          <Stack.Screen name="FundraiserEdit">
+            {(props) => <ThemedScreen {...props} Component={FundraiserEditScreen} />}
           </Stack.Screen>
         </Stack.Navigator>
       </NavigationContainer>

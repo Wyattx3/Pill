@@ -16,7 +16,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as ImagePicker from 'expo-image-picker';
 import BottomNav from '../components/BottomNav';
-import { createFundraiser, FundraiserMedia, GiftTier } from '../utils/donations';
+import { createFundraiser, addMyFundraiser, FundraiserMedia, GiftTier } from '../utils/donations';
 
 const { width: W } = Dimensions.get('window');
 const sc = (v: number) => Math.round(v * (W / 390));
@@ -96,7 +96,7 @@ export default function CreateFundraiserScreen({ navigation, route, theme }: any
       return;
     }
     try {
-      await createFundraiser({
+      const fundraiser = await createFundraiser({
         title: title.trim(),
         description: description.trim(),
         goalAmount: parseInt(goalAmount, 10),
@@ -107,6 +107,14 @@ export default function CreateFundraiserScreen({ navigation, route, theme }: any
         creatorType: 'individual',
         verificationStatus: 'approved',
         isPublished: true,
+      });
+      await addMyFundraiser({
+        id: fundraiser.id,
+        title: title.trim(),
+        description: description.trim(),
+        goalAmount: parseInt(goalAmount, 10),
+        imageUrl: media.length > 0 ? media[0].uri : '',
+        media,
       });
       Alert.alert('Success!', 'Your fundraiser has been published.');
       navigation.goBack();

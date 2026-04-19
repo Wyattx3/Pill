@@ -161,6 +161,7 @@ All data persistence is via AsyncStorage. Keys:
 - `@sanctuary_dark_mode` — dark mode preference (boolean string)
 - `@pill_donations` — fundraisers array (JSON)
 - `@pill_donation_comments` — donation comments array (JSON)
+- `@pill_donation_history` — past donation records array (JSON)
 - `@pill_donations_onboarded` — donations onboarding seen flag (boolean string)
 - `@pill_verification_status` — user verification status (JSON)
 - Passcode/PIN storage (various keys in passcode screens)
@@ -170,13 +171,16 @@ No backend or API layer exists — all data is hardcoded seed data or stored loc
 ### Donations Feature
 
 **Data layer** (`src/utils/donations.ts`):
-- `Fundraiser` type: id, title, description, imageUrl, goalAmount, raisedAmount, creatorName, creatorType ('individual' | 'organization'), verificationStatus ('pending' | 'approved'), submittedAt, isPublished, orgName?
-- `DonationComment` type: id, postId, donorName (null = anonymous), amount, donationType ('money' | 'ads'), message, timestamp
+- `Fundraiser` type: id, title, description, imageUrl, media (`FundraiserMedia[]`), goalAmount, raisedAmount, creatorName, creatorType ('individual' | 'organization'), verificationStatus ('pending' | 'approved'), submittedAt, isPublished, orgName?, giftTiers (`GiftTier[]`)
+- `FundraiserMedia` type: id, uri, type ('image' | 'video')
+- `GiftTier` type: id, minAmount, title, description, imageUrl?
+- `DonationComment` type: id, postId, donorName (null = anonymous), amount, donationType ('money' | 'ads'), message, timestamp, rewardTierId?, certificateId?
+- `DonationRecord` type: id, postId, postTitle, creatorName, donorName, amount, donationType, message, timestamp, isAnonymous, rewardTier?, certificateId?
 - `VerificationStatus` type: type, status, submittedAt, fullName?, orgName?, orgType?, website?
-- CRUD functions: `getFundraisers()`, `createFundraiser()`, `getComments()`, `addComment()`, `getVerificationStatus()`, `submitVerification()`, `isOnboarded()`, `setOnboarded()`
-- Seed data: 4 fundraisers (2 org, 2 individual) + 4 comments
+- CRUD functions: `getFundraisers()`, `createFundraiser()`, `getComments()`, `addComment()`, `getDonationHistory()`, `addDonationRecord()`, `getAllComments()`, `getVerificationStatus()`, `submitVerification()`, `isOnboarded()`, `setOnboarded()`
+- Seed data: 4 fundraisers (2 org, 2 individual) with gift tiers + 4 comments
 
-**Screens (8):**
+**Screens (10):**
 | Screen | File | Purpose |
 |--------|------|---------|
 | DonationsOnboarding | `DonationsOnboardingScreen.tsx` | First-time intro, sets onboarding flag |

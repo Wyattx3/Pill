@@ -16,7 +16,7 @@ interface NavItem {
 const items: NavItem[] = [
   { icon: 'home-outline', activeIcon: 'home', label: 'Home', screen: 'Home' },
   { icon: 'shield-outline', activeIcon: 'shield', label: 'Safety', screen: 'SafetyCenter' },
-  { icon: 'heart-circle-outline', activeIcon: 'heart-circle', label: 'Give', screen: 'DonationsFeed' },
+  { icon: 'heart-circle-outline', activeIcon: 'heart-circle', label: 'Give', screen: 'DonationsOnboarding' },
   { icon: 'settings-outline', activeIcon: 'settings', label: 'Settings', screen: 'Settings' },
 ];
 

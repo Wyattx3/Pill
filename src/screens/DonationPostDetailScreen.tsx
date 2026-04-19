@@ -14,7 +14,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 import BottomNav from '../components/BottomNav';
-import { getFundraisers, getComments, Fundraiser, DonationComment } from '../utils/donations';
+import { getFundraisers, getMyFundraisers, getCommentsForFundraiser, Fundraiser, MyFundraiser, DonationComment } from '../utils/donations';
 
 const { width: W } = Dimensions.get('window');
 const sc = (v: number) => Math.round(v * (W / 390));
@@ -35,8 +35,31 @@ export default function DonationPostDetailScreen({ navigation, route, theme }: a
   const loadData = async () => {
     const fundraisers = await getFundraisers();
     const found = fundraisers.find((f) => f.id === postId);
-    if (found) setFundraiser(found);
-    const cms = await getComments(postId);
+    if (found) {
+      setFundraiser(found);
+    } else {
+      // Fallback: search in my fundraisers
+      const myFundraisers = await getMyFundraisers();
+      const myFound = myFundraisers.find((f) => f.id === postId);
+      if (myFound) {
+        setFundraiser({
+          id: myFound.id,
+          title: myFound.title,
+          description: myFound.description,
+          imageUrl: myFound.imageUrl,
+          media: myFound.media || [],
+          goalAmount: myFound.goalAmount,
+          raisedAmount: myFound.raisedAmount,
+          creatorName: 'You',
+          creatorType: 'individual',
+          verificationStatus: 'approved',
+          submittedAt: myFound.createdAt,
+          isPublished: true,
+          giftTiers: [],
+        });
+      }
+    }
+    const cms = await getCommentsForFundraiser(postId);
     setComments(cms);
   };
 

@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
+import * as MediaLibrary from 'expo-media-library';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
@@ -26,6 +27,8 @@ export default function DonationHistoryScreen({ navigation, theme }: any) {
   const { colors, isDark } = theme;
   const [donations, setDonations] = useState<DonationRecord[]>([]);
   const [selectedReward, setSelectedReward] = useState<DonationRecord | null>(null);
+  const [zoomedImageUri, setZoomedImageUri] = useState<string | null>(null);
+  const [downloading, setDownloading] = useState(false);
 
   useFocusEffect(
     useCallback(() => {
@@ -37,6 +40,30 @@ export default function DonationHistoryScreen({ navigation, theme }: any) {
     const date = new Date(ts);
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     return `${months[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;
+  };
+
+  const handleDownloadImage = async () => {
+    if (!zoomedImageUri || downloading) return;
+    try {
+      setDownloading(true);
+      const { status } = await MediaLibrary.requestPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert('Permission Required', 'Please grant photo library permission to save images.');
+        return;
+      }
+      const asset = await MediaLibrary.createAssetAsync(zoomedImageUri);
+      const album = await MediaLibrary.getAlbumAsync('download');
+      if (album) {
+        await MediaLibrary.addAssetsToAlbumAsync([asset], album);
+      } else {
+        await MediaLibrary.createAlbumAsync('download', asset, false);
+      }
+      Alert.alert('Saved', 'Image saved to your photo library.');
+    } catch (e: any) {
+      Alert.alert('Error', e.message || 'Failed to save image');
+    } finally {
+      setDownloading(false);
+    }
   };
 
   const openPost = (postId: string) => {
@@ -203,7 +230,15 @@ export default function DonationHistoryScreen({ navigation, theme }: any) {
               <>
                 {/* Reward image */}
                 {selectedReward.rewardTier.imageUrl ? (
-                  <Image source={{ uri: selectedReward.rewardTier.imageUrl }} style={styles.fullScreenImage} />
+                  <TouchableOpacity
+                    activeOpacity={0.85}
+                    onPress={() => setZoomedImageUri(selectedReward.rewardTier?.imageUrl || null)}
+                  >
+                    <Image source={{ uri: selectedReward.rewardTier.imageUrl }} style={styles.fullScreenImage} />
+                    <View style={styles.zoomHint}>
+                      <Ionicons name="expand-outline" size={sc(14)} color="#fff" />
+                    </View>
+                  </TouchableOpacity>
                 ) : (
                   <View style={[styles.fullScreenIconWrap, { backgroundColor: colors.primary + '12' }]}>
                     <Ionicons name="gift" size={sc(64)} color={colors.primary} />
@@ -275,6 +310,32 @@ export default function DonationHistoryScreen({ navigation, theme }: any) {
             )}
             <View style={{ height: sc(40) }} />
           </ScrollView>
+        </View>
+      </Modal>
+
+      {/* Zoomed image overlay */}
+      <Modal visible={!!zoomedImageUri} transparent animationType="fade">
+        <View style={styles.zoomOverlay}>
+          <View style={styles.zoomTopBar}>
+            <TouchableOpacity
+              style={styles.zoomClose}
+              onPress={() => setZoomedImageUri(null)}
+              activeOpacity={0.7}
+            >
+              <Ionicons name="close" size={sc(28)} color="#fff" />
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.zoomDownload, { opacity: downloading ? 0.5 : 1 }]}
+              onPress={handleDownloadImage}
+              disabled={downloading}
+              activeOpacity={0.7}
+            >
+              <Ionicons name={downloading ? 'hourglass' : 'download-outline'} size={sc(28)} color="#fff" />
+            </TouchableOpacity>
+          </View>
+          {zoomedImageUri && (
+            <Image source={{ uri: zoomedImageUri }} style={styles.zoomedImage} resizeMode="contain" />
+          )}
         </View>
       </Modal>
 
@@ -366,4 +427,23 @@ const styles = StyleSheet.create({
     borderRadius: sc(10), paddingHorizontal: sc(10), paddingVertical: sc(4),
   },
   anonFullText: { fontSize: sc(11), fontWeight: '600' },
+  zoomOverlay: {
+    flex: 1, backgroundColor: '#000000ee', justifyContent: 'center', alignItems: 'center',
+  },
+  zoomedImage: { width: '90%', height: '60%', borderRadius: sc(16) },
+  zoomTopBar: {
+    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
+    position: 'absolute', top: sc(56), left: sc(20), right: sc(20), zIndex: 1,
+  },
+  zoomClose: {
+    backgroundColor: '#00000066', borderRadius: sc(16), padding: sc(6),
+  },
+  zoomDownload: {
+    backgroundColor: '#00000066', borderRadius: sc(16), padding: sc(6),
+  },
+  zoomHint: {
+    position: 'absolute', right: sc(6), top: sc(6),
+    backgroundColor: '#00000066', borderRadius: sc(6),
+    width: sc(20), height: sc(20), alignItems: 'center', justifyContent: 'center',
+  },
 });
