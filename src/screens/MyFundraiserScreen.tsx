@@ -164,9 +164,9 @@ export default function MyFundraiserScreen({ navigation, theme }: any) {
               <Ionicons name="chevron-forward" size={sc(16)} color={colors.onSurfaceVariant} />
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.sidebarItem} onPress={() => openScreen('FundraiserEdit', { fundraiserId: fundraisers[0]?.id })} activeOpacity={0.7}>
-              <Ionicons name="create-outline" size={sc(18)} color={colors.onSurfaceVariant} />
-              <Text style={[styles.sidebarItemText, { color: colors.onSurface }]}>Edit Fundraiser</Text>
+            <TouchableOpacity style={styles.sidebarItem} onPress={() => openScreen('ManageFundraisers')} activeOpacity={0.7}>
+              <Ionicons name="grid-outline" size={sc(18)} color={colors.onSurfaceVariant} />
+              <Text style={[styles.sidebarItemText, { color: colors.onSurface }]}>Manage Fundraisers</Text>
               <Ionicons name="chevron-forward" size={sc(16)} color={colors.onSurfaceVariant} />
             </TouchableOpacity>
 

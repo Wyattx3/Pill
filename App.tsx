@@ -56,6 +56,8 @@ import MyFundraiserScreen from './src/screens/MyFundraiserScreen';
 import FundraiserEditScreen from './src/screens/FundraiserEditScreen';
 import MyFundraiserAuthScreen from './src/screens/MyFundraiserAuthScreen';
 import CommentReplyScreen from './src/screens/CommentReplyScreen';
+import ReplyScreen from './src/screens/ReplyScreen';
+import ManageFundraisersScreen from './src/screens/ManageFundraisersScreen';
 import PayoutScreen from './src/screens/PayoutScreen';
 
 import ProfileSettingsScreen from './src/screens/ProfileSettingsScreen';
@@ -230,6 +232,12 @@ function ThemedApp() {
           </Stack.Screen>
           <Stack.Screen name="CommentReply">
             {(props) => <ThemedScreen {...props} Component={CommentReplyScreen} />}
+          </Stack.Screen>
+          <Stack.Screen name="Reply">
+            {(props) => <ThemedScreen {...props} Component={ReplyScreen} />}
+          </Stack.Screen>
+          <Stack.Screen name="ManageFundraisers">
+            {(props) => <ThemedScreen {...props} Component={ManageFundraisersScreen} />}
           </Stack.Screen>
           <Stack.Screen name="Payout">
             {(props) => <ThemedScreen {...props} Component={PayoutScreen} />}

@@ -14,7 +14,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 import BottomNav from '../components/BottomNav';
-import { getFundraisers, getMyFundraisers, getCommentsForFundraiser, Fundraiser, MyFundraiser, DonationComment } from '../utils/donations';
+import { getFundraisers, getMyFundraisers, getCommentsForFundraiser, getReplies, Fundraiser, MyFundraiser, DonationComment, CommentReply } from '../utils/donations';
 
 const { width: W } = Dimensions.get('window');
 const sc = (v: number) => Math.round(v * (W / 390));
@@ -24,7 +24,7 @@ export default function DonationPostDetailScreen({ navigation, route, theme }: a
   const { colors, isDark } = theme;
   const { postId } = route.params || {};
   const [fundraiser, setFundraiser] = useState<Fundraiser | null>(null);
-  const [comments, setComments] = useState<DonationComment[]>([]);
+  const [comments, setComments] = useState<(DonationComment & { replies: CommentReply[] })[]>([]);
 
   useFocusEffect(
     useCallback(() => {
@@ -60,7 +60,15 @@ export default function DonationPostDetailScreen({ navigation, route, theme }: a
       }
     }
     const cms = await getCommentsForFundraiser(postId);
-    setComments(cms);
+
+    // Fetch replies for each comment
+    const commentsWithReplies = await Promise.all(
+      cms.map(async (c) => {
+        const replies = await getReplies(c.id);
+        return { ...c, replies };
+      })
+    );
+    setComments(commentsWithReplies);
   };
 
   const progress = fundraiser && fundraiser.goalAmount > 0
@@ -261,6 +269,22 @@ export default function DonationPostDetailScreen({ navigation, route, theme }: a
                 {c.message ? (
                   <Text style={[styles.commentMsg, { color: colors.onSurfaceVariant }]}>{c.message}</Text>
                 ) : null}
+
+                {/* Replies */}
+                {c.replies.length > 0 && (
+                  <View style={styles.repliesContainer}>
+                    {c.replies.map((r) => (
+                      <View key={r.id} style={[styles.replyItem, { borderLeftColor: colors.primary }]}>
+                        <View style={styles.replyHeader}>
+                          <Ionicons name="return-down-back" size={sc(12)} color={colors.primary} />
+                          <Text style={[styles.replyName, { color: colors.primary }]}>You</Text>
+                          <Text style={[styles.replyTime, { color: colors.outlineVariant }]}>{formatTime(r.timestamp)}</Text>
+                        </View>
+                        <Text style={[styles.replyText, { color: colors.onSurfaceVariant }]}>{r.reply}</Text>
+                      </View>
+                    ))}
+                  </View>
+                )}
               </View>
             ))
           )}
@@ -347,6 +371,13 @@ const styles = StyleSheet.create({
   typeText: { fontSize: sc(10), fontWeight: '700' },
   commentTime: { fontSize: sc(10) },
   commentMsg: { fontSize: sc(13), lineHeight: sc(18), marginTop: sc(4) },
+
+  repliesContainer: { marginBottom: sc(8), marginTop: sc(6) },
+  replyItem: { paddingLeft: sc(12), borderLeftWidth: 2, marginBottom: sc(6) },
+  replyHeader: { flexDirection: 'row', alignItems: 'center', gap: sc(4), marginBottom: sc(2) },
+  replyName: { fontSize: sc(11), fontWeight: '700' },
+  replyTime: { fontSize: sc(9) },
+  replyText: { fontSize: sc(12), lineHeight: sc(18) },
   bottomBar: {
     paddingHorizontal: sc(16), paddingTop: sc(12), borderTopWidth: StyleSheet.hairlineWidth,
   },
