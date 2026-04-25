@@ -22,7 +22,7 @@ import ActiveCallScreen from './src/screens/ActiveCallScreen';
 import IncomingCallScreen from './src/screens/IncomingCallScreen';
 import SafetyReportScreen from './src/screens/SafetyReportScreen';
 import ReportConfirmationScreen from './src/screens/ReportConfirmationScreen';
-import ReflectionScreen from './src/screens/ReflectionScreen';
+
 import PasscodeEntryScreen from './src/screens/PasscodeEntryScreen';
 import PasscodeCreateScreen from './src/screens/PasscodeCreateScreen';
 import SettingsScreen from './src/screens/SettingsScreen';
@@ -65,6 +65,7 @@ import EditDisplayNameScreen from './src/screens/EditDisplayNameScreen';
 import EditEmailScreen from './src/screens/EditEmailScreen';
 import EditPhoneScreen from './src/screens/EditPhoneScreen';
 import PaymentSetupScreen from './src/screens/PaymentSetupScreen';
+import PayoutScheduleEditScreen from './src/screens/PayoutScheduleEditScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -145,9 +146,6 @@ function ThemedApp() {
           </Stack.Screen>
           <Stack.Screen name="ReportConfirmation">
             {(props) => <ThemedScreen {...props} Component={ReportConfirmationScreen} />}
-          </Stack.Screen>
-          <Stack.Screen name="Reflection">
-            {(props) => <ThemedScreen {...props} Component={ReflectionScreen} />}
           </Stack.Screen>
           <Stack.Screen name="Settings">
             {(props) => <ThemedScreen {...props} Component={SettingsScreen} />}
@@ -257,6 +255,12 @@ function ThemedApp() {
           </Stack.Screen>
           <Stack.Screen name="PaymentSetup">
             {(props) => <ThemedScreen {...props} Component={PaymentSetupScreen} />}
+          </Stack.Screen>
+          <Stack.Screen
+            name="PayoutScheduleEdit"
+            options={{ presentation: 'fullScreenModal', animation: 'none' }}
+          >
+            {(props) => <ThemedScreen {...props} Component={PayoutScheduleEditScreen} />}
           </Stack.Screen>
           <Stack.Screen name="MyFundraiser">
             {(props) => <ThemedScreen {...props} Component={MyFundraiserScreen} />}

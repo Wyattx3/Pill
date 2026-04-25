@@ -58,7 +58,7 @@ export default function DonationScreen({ navigation, theme }: any) {
   const handleDonate = () => {
     setDonated(true);
     setTimeout(() => {
-      navigation.navigate('Reflection');
+      navigation.navigate('Home');
     }, 2000);
   };
 

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Dimensions, Switch } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
@@ -6,6 +6,34 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const { width: W } = Dimensions.get('window');
 const sc = (v: number) => Math.round(v * (W / 390));
+
+// Green palette for pixel graph (darkest -> lightest)
+const GREENS = ['#1B5E20', '#2E7D32', '#388E3C', '#43A047', '#4CAF50', '#66BB6A', '#81C784'];
+
+function generatePixelData(filter: 'week' | 'month' | 'all', baseValue: number) {
+  const cols = 7;
+  let rows = 4;
+  if (filter === 'month') rows = 5;
+  if (filter === 'all') rows = 12;
+  const total = cols * rows;
+  const cells: number[] = [];
+  // Seed-like generation so same filter always looks similar
+  let seed = filter === 'week' ? 7 : filter === 'month' ? 31 : 99;
+  for (let i = 0; i < total; i++) {
+    seed = (seed * 9301 + 49297) % 233280;
+    const rnd = seed / 233280;
+    // More likely to have dots when baseValue is high
+    const threshold = Math.max(0.15, 1 - baseValue / 300);
+    if (rnd > threshold) {
+      // Intensity 1-6
+      const intensity = Math.floor(((rnd - threshold) / (1 - threshold)) * 5) + 1;
+      cells.push(intensity);
+    } else {
+      cells.push(0);
+    }
+  }
+  return { cols, rows, cells };
+}
 
 const recentComments = [
   { name: 'Calm', avatar: '🌿', rating: 5, text: 'Felt truly heard. Thank you.', time: '2h ago' },
@@ -28,6 +56,8 @@ export default function ListenerDashboardScreen({ navigation, theme }: any) {
 
   const current = stats[timeFilter];
   const earnings = { total: 234.50, pending: 45.00, paid: 189.50 };
+
+  const pixelData = useMemo(() => generatePixelData(timeFilter, current.calls), [timeFilter, current.calls]);
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
@@ -95,9 +125,9 @@ export default function ListenerDashboardScreen({ navigation, theme }: any) {
           </View>
         </TouchableOpacity>
 
-        {/* Stats Grid */}
-        <View style={styles.statsHeader}>
-          <Text style={[styles.statsTitle, { color: colors.onSurface }]}>Your Impact</Text>
+        {/* Your Impact — Pixel Graph */}
+        <View style={styles.impactHeader}>
+          <Text style={[styles.impactTitle, { color: colors.onSurface }]}>Your Impact</Text>
           <View style={styles.filterRow}>
             {(['week', 'month', 'all'] as const).map((f) => (
               <TouchableOpacity key={f} style={[styles.filterBtn, { backgroundColor: timeFilter === f ? colors.primaryContainer : colors.surfaceContainerLow }]} onPress={() => setTimeFilter(f)} activeOpacity={0.7}>
@@ -107,28 +137,40 @@ export default function ListenerDashboardScreen({ navigation, theme }: any) {
           </View>
         </View>
 
-        <View style={styles.statRow}>
-          <View style={[styles.statCard, { backgroundColor: colors.surfaceContainerLow }]}>
-            <Ionicons name="call" size={sc(20)} color={colors.primary} />
-            <Text style={[styles.statNumber, { color: colors.onSurface }]}>{current.calls}</Text>
-            <Text style={[styles.statLabel, { color: colors.onSurfaceVariant }]}>Sessions</Text>
+        {/* Pixel Graph Card */}
+        <View style={[styles.pixelCard, { backgroundColor: colors.surfaceContainerLow }]}>
+          <View style={styles.pixelGrid}>
+            {pixelData.cells.map((intensity, i) => (
+              <View
+                key={i}
+                style={[
+                  styles.pixelDot,
+                  {
+                    backgroundColor: intensity > 0 ? GREENS[Math.min(intensity, GREENS.length - 1)] : colors.surfaceContainerHigh,
+                    opacity: intensity > 0 ? 1 : 0.35,
+                  },
+                ]}
+              />
+            ))}
           </View>
-          <View style={[styles.statCard, { backgroundColor: colors.surfaceContainerLow }]}>
-            <Ionicons name="time" size={sc(20)} color={colors.secondary} />
-            <Text style={[styles.statNumber, { color: colors.onSurface }]}>{Math.round(current.minutes / 60)}h</Text>
-            <Text style={[styles.statLabel, { color: colors.onSurfaceVariant }]}>Minutes</Text>
-          </View>
-        </View>
-        <View style={styles.statRow}>
-          <View style={[styles.statCard, { backgroundColor: colors.primaryContainer + '22' }]}>
-            <Ionicons name="star" size={sc(20)} color={colors.tertiary} />
-            <Text style={[styles.statNumber, { color: colors.tertiary }]}>{current.rating}</Text>
-            <Text style={[styles.statLabel, { color: colors.onSurfaceVariant }]}>Avg Rating</Text>
-          </View>
-          <View style={[styles.statCard, { backgroundColor: colors.surfaceContainerLow }]}>
-            <Ionicons name="people" size={sc(20)} color={colors.primary} />
-            <Text style={[styles.statNumber, { color: colors.onSurface }]}>{current.helped}</Text>
-            <Text style={[styles.statLabel, { color: colors.onSurfaceVariant }]}>People Helped</Text>
+          {/* Mini stat legend under graph */}
+          <View style={styles.impactStatsRow}>
+            <View style={styles.impactStat}>
+              <Text style={[styles.impactStatNum, { color: '#4CAF50' }]}>{current.calls}</Text>
+              <Text style={[styles.impactStatLabel, { color: colors.onSurfaceVariant }]}>Sessions</Text>
+            </View>
+            <View style={styles.impactStat}>
+              <Text style={[styles.impactStatNum, { color: '#4CAF50' }]}>{Math.round(current.minutes / 60)}h</Text>
+              <Text style={[styles.impactStatLabel, { color: colors.onSurfaceVariant }]}>Hours</Text>
+            </View>
+            <View style={styles.impactStat}>
+              <Text style={[styles.impactStatNum, { color: '#4CAF50' }]}>{current.rating}</Text>
+              <Text style={[styles.impactStatLabel, { color: colors.onSurfaceVariant }]}>Rating</Text>
+            </View>
+            <View style={styles.impactStat}>
+              <Text style={[styles.impactStatNum, { color: '#4CAF50' }]}>{current.helped}</Text>
+              <Text style={[styles.impactStatLabel, { color: colors.onSurfaceVariant }]}>Helped</Text>
+            </View>
           </View>
         </View>
 
@@ -243,15 +285,20 @@ const styles = StyleSheet.create({
   scheduleTitle: { fontSize: sc(14), fontWeight: '700' },
   scheduleDesc: { fontSize: sc(11), marginTop: sc(2) },
 
-  statsHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: sc(12), marginBottom: sc(10) },
-  statsTitle: { fontSize: sc(16), fontWeight: '700' },
+  impactHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: sc(12), marginBottom: sc(10) },
+  impactTitle: { fontSize: sc(16), fontWeight: '700' },
   filterRow: { flexDirection: 'row', gap: sc(6) },
   filterBtn: { paddingHorizontal: sc(10), paddingVertical: sc(6), borderRadius: sc(20) },
   filterText: { fontSize: sc(10), fontWeight: '600' },
-  statRow: { flexDirection: 'row', gap: sc(10), marginBottom: sc(10) },
-  statCard: { flex: 1, borderRadius: sc(14), padding: sc(16), alignItems: 'center' },
-  statNumber: { fontSize: sc(24), fontWeight: '800', marginTop: sc(4) },
-  statLabel: { fontSize: sc(10), marginTop: sc(2) },
+
+  pixelCard: { borderRadius: sc(16), padding: sc(16), marginBottom: sc(10) },
+  pixelGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: sc(5), justifyContent: 'center', marginBottom: sc(16) },
+  pixelDot: { width: sc(10), height: sc(10), borderRadius: sc(3) },
+
+  impactStatsRow: { flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: sc(4) },
+  impactStat: { alignItems: 'center', minWidth: sc(56) },
+  impactStatNum: { fontSize: sc(20), fontWeight: '800', letterSpacing: -0.5 },
+  impactStatLabel: { fontSize: sc(10), marginTop: sc(2), fontWeight: '500' },
 
   earningsCard: { borderRadius: sc(14), padding: sc(18), marginBottom: sc(10) },
   earningsHeader: { flexDirection: 'row', alignItems: 'center', gap: sc(6), marginBottom: sc(8) },

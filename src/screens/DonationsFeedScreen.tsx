@@ -67,6 +67,14 @@ export default function DonationsFeedScreen({ navigation, theme }: any) {
 
   const progress = (f: Fundraiser) =>
     f.goalAmount > 0 ? Math.min((f.raisedAmount / f.goalAmount) * 100, 100) : 0;
+  const progressFill = (f: Fundraiser) => {
+    const pct = progress(f);
+    return f.raisedAmount > 0 && pct > 0 ? Math.max(pct, 1) : pct;
+  };
+  const progressLabel = (f: Fundraiser) => {
+    const pct = progress(f);
+    return f.raisedAmount > 0 && pct > 0 && pct < 1 ? '<1' : `${Math.round(pct)}`;
+  };
 
   const formatCurrency = (n: number) =>
     `$${n.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
@@ -234,7 +242,7 @@ export default function DonationsFeedScreen({ navigation, theme }: any) {
                         colors={[colors.primaryDim, colors.primaryFixedDim]}
                         start={{ x: 0, y: 0 }}
                         end={{ x: 1, y: 0 }}
-                        style={[styles.progressFill, { width: `${progress(f)}%` }]}
+                        style={[styles.progressFill, { width: `${progressFill(f)}%` }]}
                       />
                     </View>
                   </View>
@@ -243,7 +251,7 @@ export default function DonationsFeedScreen({ navigation, theme }: any) {
                       {formatCurrency(f.raisedAmount)} raised
                     </Text>
                     <Text style={[styles.goal, { color: colors.onSurfaceVariant }]}>
-                      {Math.round(progress(f))}% of {formatCurrency(f.goalAmount)}
+                      {progressLabel(f)}% of {formatCurrency(f.goalAmount)}
                     </Text>
                   </View>
                   {f.giftTiers && f.giftTiers.length > 0 && (

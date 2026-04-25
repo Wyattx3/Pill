@@ -1,5 +1,13 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Dimensions, Switch, Animated, Easing } from 'react-native';
+import React, { useState } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  ScrollView,
+  Dimensions,
+  Switch,
+} from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -9,218 +17,330 @@ const sc = (v: number) => Math.round(v * (W / 390));
 
 const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
+function pad(n: number) {
+  return n.toString().padStart(2, '0');
+}
+
 export default function AvailabilityScheduleScreen({ navigation, theme }: any) {
   const insets = useSafeAreaInsets();
   const { colors, isDark } = theme;
 
-  // State
   const [selectedDays, setSelectedDays] = useState<string[]>(['Mon', 'Tue', 'Wed', 'Thu', 'Fri']);
-  const [startTime, setStartTime] = useState({ h: 9, m: 0, p: 'AM' });
-  const [endTime, setEndTime] = useState({ h: 5, m: 0, p: 'PM' });
+  const [startHour, setStartHour] = useState(9);
+  const [startMin, setStartMin] = useState(0);
+  const [startAmPm, setStartAmPm] = useState<'AM' | 'PM'>('AM');
+  const [endHour, setEndHour] = useState(5);
+  const [endMin, setEndMin] = useState(0);
+  const [endAmPm, setEndAmPm] = useState<'AM' | 'PM'>('PM');
   const [autoOn, setAutoOn] = useState(true);
   const [maxCalls, setMaxCalls] = useState(10);
   const [unlimited, setUnlimited] = useState(false);
-
-  // Animate entrance
-  const fadeAnim = useRef(new Animated.Value(0)).current;
-  const slideAnim = useRef(new Animated.Value(30)).current;
-  useEffect(() => {
-    Animated.parallel([
-      Animated.timing(fadeAnim, { toValue: 1, duration: 400, easing: Easing.out(Easing.ease), useNativeDriver: true }),
-      Animated.timing(slideAnim, { toValue: 0, duration: 400, easing: Easing.out(Easing.ease), useNativeDriver: true }),
-    ]).start();
-  }, []);
+  const [saved, setSaved] = useState(false);
 
   const toggleDay = (day: string) => {
-    setSelectedDays(prev =>
-      prev.includes(day) ? prev.filter(d => d !== day) : [...prev, day]
+    setSelectedDays((prev) =>
+      prev.includes(day) ? prev.filter((d) => d !== day) : [...prev, day]
     );
   };
 
-  const adjustTime = (field: 'start' | 'end', delta: number) => {
-    const setter = field === 'start' ? setStartTime : setEndTime;
-    setter((prev: any) => {
-      let { h, m, p } = prev;
-      let newM = m + delta;
-      let newH = h;
-      let newP = p;
-      if (newM >= 60) { newM -= 60; newH++; }
-      if (newM < 0) { newM += 60; newH--; }
-      if (newH > 12) { newH -= 12; newP = newP === 'AM' ? 'PM' : 'AM'; }
-      if (newH < 1) { newH += 12; newP = newP === 'AM' ? 'PM' : 'AM'; }
-      return { h: newH, m: newM, p: newP };
+  const handleSave = () => {
+    setSaved(true);
+    setTimeout(() => {
+      setSaved(false);
+      navigation.goBack();
+    }, 800);
+  };
+
+  const set24Hours = () => {
+    setStartHour(0);
+    setStartMin(0);
+    setStartAmPm('AM');
+    setEndHour(11);
+    setEndMin(59);
+    setEndAmPm('PM');
+  };
+
+  const adjustHour = (setter: React.Dispatch<React.SetStateAction<number>>, val: number) => {
+    setter((prev) => {
+      let next = prev + val;
+      if (next < 1) next = 12;
+      if (next > 12) next = 1;
+      return next;
     });
   };
 
-  const formatTime = (t: { h: number; m: number; p: string }) =>
-    `${t.h}:${t.m.toString().padStart(2, '0')} ${t.p}`;
-
-  const handleSave = () => {
-    // Here you'd persist the schedule
-    navigation.goBack();
+  const adjustMin = (setter: React.Dispatch<React.SetStateAction<number>>, val: number) => {
+    setter((prev) => {
+      let next = prev + val;
+      if (next < 0) next = 55;
+      if (next >= 60) next = 0;
+      return next;
+    });
   };
 
+  const TimeBlock = ({
+    label,
+    h,
+    m,
+    p,
+    setH,
+    setM,
+    setP,
+  }: {
+    label: string;
+    h: number;
+    m: number;
+    p: 'AM' | 'PM';
+    setH: React.Dispatch<React.SetStateAction<number>>;
+    setM: React.Dispatch<React.SetStateAction<number>>;
+    setP: React.Dispatch<React.SetStateAction<'AM' | 'PM'>>;
+  }) => (
+    <View style={styles.timeBlock}>
+      <Text style={[styles.timeBlockLabel, { color: colors.onSurfaceVariant }]}>{label}</Text>
+      <View style={styles.timeWheelRow}>
+        {/* Hour */}
+        <View style={styles.wheelCol}>
+          <TouchableOpacity style={styles.wheelArrow} onPress={() => adjustHour(setH, 1)} activeOpacity={0.6}>
+            <Ionicons name="chevron-up" size={sc(18)} color={colors.primary} />
+          </TouchableOpacity>
+          <Text style={[styles.wheelValue, { color: colors.onSurface }]}>{pad(h)}</Text>
+          <TouchableOpacity style={styles.wheelArrow} onPress={() => adjustHour(setH, -1)} activeOpacity={0.6}>
+            <Ionicons name="chevron-down" size={sc(18)} color={colors.primary} />
+          </TouchableOpacity>
+          <Text style={[styles.wheelUnit, { color: colors.onSurfaceVariant }]}>h</Text>
+        </View>
+
+        <Text style={[styles.wheelColon, { color: colors.onSurfaceVariant }]}>:</Text>
+
+        {/* Minute */}
+        <View style={styles.wheelCol}>
+          <TouchableOpacity style={styles.wheelArrow} onPress={() => adjustMin(setM, 5)} activeOpacity={0.6}>
+            <Ionicons name="chevron-up" size={sc(18)} color={colors.primary} />
+          </TouchableOpacity>
+          <Text style={[styles.wheelValue, { color: colors.onSurface }]}>{pad(m)}</Text>
+          <TouchableOpacity style={styles.wheelArrow} onPress={() => adjustMin(setM, -5)} activeOpacity={0.6}>
+            <Ionicons name="chevron-down" size={sc(18)} color={colors.primary} />
+          </TouchableOpacity>
+          <Text style={[styles.wheelUnit, { color: colors.onSurfaceVariant }]}>m</Text>
+        </View>
+
+        {/* AM/PM */}
+        <View style={styles.wheelCol}>
+          <TouchableOpacity
+            style={[styles.ampmBtn, { backgroundColor: p === 'AM' ? colors.primary : colors.surface }]}
+            onPress={() => setP('AM')}
+            activeOpacity={0.7}
+          >
+            <Text style={[styles.ampmText, { color: p === 'AM' ? colors.onPrimary : colors.onSurfaceVariant }]}>AM</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.ampmBtn, { backgroundColor: p === 'PM' ? colors.primary : colors.surface }]}
+            onPress={() => setP('PM')}
+            activeOpacity={0.7}
+          >
+            <Text style={[styles.ampmText, { color: p === 'PM' ? colors.onPrimary : colors.onSurfaceVariant }]}>PM</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    </View>
+  );
+
   return (
-    <View style={[styles.container, { paddingTop: insets.top, backgroundColor: colors.background }]}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
       <StatusBar style={isDark ? 'light' : 'dark'} />
 
-      {/* Top Bar */}
-      <View style={styles.topBar}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={[styles.backButton, { backgroundColor: colors.surfaceContainerLow }]} activeOpacity={0.5}>
-          <Ionicons name="arrow-back" size={sc(22)} color={colors.onSurface} />
+      {/* Header */}
+      <View style={[styles.header, { paddingTop: Math.max(insets.top, sc(8)) }]}>
+        <TouchableOpacity
+          onPress={() => navigation.goBack()}
+          style={[styles.headerBtn, { backgroundColor: colors.surfaceContainerLow }]}
+          activeOpacity={0.5}
+        >
+          <Ionicons name="arrow-back" size={sc(20)} color={colors.onSurface} />
         </TouchableOpacity>
-        <Text style={[styles.topBarTitle, { color: colors.onSurface }]}>Availability Schedule</Text>
-        <View style={{ width: sc(38) }} />
+        <Text style={[styles.headerTitle, { color: colors.onSurface }]}>Availability</Text>
+        <TouchableOpacity
+          style={[styles.headerBtn, { backgroundColor: colors.primary }]}
+          onPress={handleSave}
+          activeOpacity={0.8}
+        >
+          <Ionicons name="checkmark" size={sc(20)} color={colors.onPrimary} />
+        </TouchableOpacity>
       </View>
 
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        {/* Auto On Toggle */}
-        <Animated.View style={{ opacity: fadeAnim, transform: [{ translateY: slideAnim }] }}>
-          <View style={[styles.card, { backgroundColor: colors.surfaceContainerLow }]}>
-            <View style={styles.cardHeader}>
-              <View style={[styles.cardIcon, { backgroundColor: colors.primaryContainer + '33' }]}>
-                <Ionicons name="toggle" size={sc(20)} color={colors.primary} />
-              </View>
-              <Text style={[styles.cardTitle, { color: colors.onSurface }]}>Auto Availability</Text>
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        {saved && (
+          <View style={[styles.savedBanner, { backgroundColor: colors.primary + '14' }]}>
+            <Ionicons name="checkmark-circle" size={sc(18)} color={colors.primary} />
+            <Text style={[styles.savedText, { color: colors.primary }]}>Saved</Text>
+          </View>
+        )}
+
+        {/* Auto Availability */}
+        <View style={[styles.sectionCard, { backgroundColor: colors.surfaceContainerLow }]}>
+          <View style={styles.sectionHeader}>
+            <View style={[styles.sectionIcon, { backgroundColor: colors.primaryContainer + '33' }]}>
+              <Ionicons name="toggle" size={sc(18)} color={colors.primary} />
             </View>
-            <View style={styles.rowBetween}>
-              <Text style={[styles.rowText, { color: colors.onSurfaceVariant }]}>
-                {autoOn ? 'Automatically go available during schedule' : 'Manual availability only'}
+            <View style={{ flex: 1 }}>
+              <Text style={[styles.sectionTitle, { color: colors.onSurface }]}>Auto Availability</Text>
+              <Text style={[styles.sectionSubtitle, { color: colors.onSurfaceVariant }]}>
+                Go available automatically during scheduled hours
               </Text>
-              <Switch
-                value={autoOn}
-                onValueChange={setAutoOn}
-                trackColor={{ true: colors.primary }}
-                thumbColor={colors.background}
+            </View>
+            <Switch
+              value={autoOn}
+              onValueChange={setAutoOn}
+              trackColor={{ false: colors.outlineVariant + '66', true: colors.primary }}
+              thumbColor={colors.background}
+            />
+          </View>
+        </View>
+
+        {/* Active Days */}
+        <View style={[styles.sectionCard, { backgroundColor: colors.surfaceContainerLow }]}>
+          <View style={styles.sectionHeaderRow}>
+            <View style={[styles.sectionIcon, { backgroundColor: colors.primaryContainer + '33' }]}>
+              <Ionicons name="calendar-outline" size={sc(18)} color={colors.primary} />
+            </View>
+            <Text style={[styles.sectionTitle, { color: colors.onSurface }]}>Active Days</Text>
+          </View>
+
+          <View style={styles.daysRow}>
+            {DAYS.map((day) => {
+              const active = selectedDays.includes(day);
+              return (
+                <TouchableOpacity
+                  key={day}
+                  style={[
+                    styles.dayCircle,
+                    {
+                      backgroundColor: active ? colors.primary : colors.surface,
+                      borderColor: active ? colors.primary : colors.surfaceContainerHigh,
+                    },
+                  ]}
+                  onPress={() => toggleDay(day)}
+                  activeOpacity={0.85}
+                >
+                  <Text
+                    style={[
+                      styles.dayCircleText,
+                      { color: active ? colors.onPrimary : colors.onSurfaceVariant },
+                    ]}
+                  >
+                    {day.charAt(0)}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+
+          <Text style={[styles.daysSummary, { color: colors.onSurfaceVariant }]}>
+            {selectedDays.length === 7
+              ? 'Every day'
+              : selectedDays.length === 0
+              ? 'No days selected'
+              : selectedDays.join(', ')}
+          </Text>
+        </View>
+
+        {/* Time Range */}
+        {autoOn && (
+          <View style={[styles.sectionCard, { backgroundColor: colors.surfaceContainerLow }]}>
+            <View style={styles.timeSectionHeader}>
+              <View style={styles.sectionHeaderRow}>
+                <View style={[styles.sectionIcon, { backgroundColor: colors.primaryContainer + '33' }]}>
+                  <Ionicons name="time-outline" size={sc(18)} color={colors.primary} />
+                </View>
+                <Text style={[styles.sectionTitle, { color: colors.onSurface }]}>Time Range</Text>
+              </View>
+              <TouchableOpacity
+                style={[styles.twentyFourBtn, { backgroundColor: colors.primaryContainer + '33' }]}
+                onPress={set24Hours}
+                activeOpacity={0.7}
+              >
+                <Ionicons name="time" size={sc(12)} color={colors.primary} />
+                <Text style={[styles.twentyFourText, { color: colors.primary }]}>24h</Text>
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.timeBlocksRow}>
+              <TimeBlock
+                label="From"
+                h={startHour}
+                m={startMin}
+                p={startAmPm}
+                setH={setStartHour}
+                setM={setStartMin}
+                setP={setStartAmPm}
+              />
+
+              <View style={styles.timeConnector}>
+                <View style={[styles.dotLine, { backgroundColor: colors.surfaceContainerHigh }]} />
+                <Ionicons name="arrow-forward" size={sc(14)} color={colors.onSurfaceVariant} />
+                <View style={[styles.dotLine, { backgroundColor: colors.surfaceContainerHigh }]} />
+              </View>
+
+              <TimeBlock
+                label="To"
+                h={endHour}
+                m={endMin}
+                p={endAmPm}
+                setH={setEndHour}
+                setM={setEndMin}
+                setP={setEndAmPm}
               />
             </View>
           </View>
+        )}
 
-          {/* Active Days */}
-          <View style={[styles.card, { backgroundColor: colors.surfaceContainerLow }]}>
-            <View style={styles.cardHeader}>
-              <View style={[styles.cardIcon, { backgroundColor: colors.primaryContainer + '33' }]}>
-                <Ionicons name="calendar-outline" size={sc(20)} color={colors.primary} />
-              </View>
-              <Text style={[styles.cardTitle, { color: colors.onSurface }]}>Active Days</Text>
+        {/* Max Daily Calls */}
+        <View style={[styles.sectionCard, { backgroundColor: colors.surfaceContainerLow }]}>
+          <View style={styles.sectionHeaderRow}>
+            <View style={[styles.sectionIcon, { backgroundColor: colors.primaryContainer + '33' }]}>
+              <Ionicons name="call-outline" size={sc(18)} color={colors.primary} />
             </View>
-            <Text style={[styles.cardDesc, { color: colors.onSurfaceVariant }]}>Select which days you'll be auto-available</Text>
-            <View style={styles.daysGrid}>
-              {DAYS.map(day => {
-                const active = selectedDays.includes(day);
-                return (
-                  <TouchableOpacity
-                    key={day}
-                    style={[styles.dayChip, {
-                      backgroundColor: active ? colors.primaryContainer : colors.surface,
-                      borderColor: active ? colors.primary : colors.surfaceContainerHigh,
-                      borderWidth: 2,
-                    }]}
-                    onPress={() => toggleDay(day)}
-                    activeOpacity={0.7}
-                  >
-                    <Text style={[styles.dayText, { color: active ? colors.onPrimaryContainer : colors.onSurfaceVariant, fontWeight: active ? '700' : '500' }]}>
-                      {day}
-                    </Text>
-                  </TouchableOpacity>
-                );
-              })}
-            </View>
+            <Text style={[styles.sectionTitle, { color: colors.onSurface }]}>Daily Call Limit</Text>
           </View>
 
-          {/* Time Range */}
-          {autoOn && (
-            <View style={[styles.card, { backgroundColor: colors.surfaceContainerLow }]}>
-              <View style={styles.cardHeader}>
-                <View style={[styles.cardIcon, { backgroundColor: colors.primaryContainer + '33' }]}>
-                  <Ionicons name="time-outline" size={sc(20)} color={colors.primary} />
-                </View>
-                <Text style={[styles.cardTitle, { color: colors.onSurface }]}>Auto-On Time Range</Text>
+          <View style={styles.limitToggleRow}>
+            <Text style={[styles.limitToggleText, { color: colors.onSurface }]}>Unlimited calls</Text>
+            <Switch
+              value={unlimited}
+              onValueChange={setUnlimited}
+              trackColor={{ false: colors.outlineVariant + '66', true: colors.primary }}
+              thumbColor={colors.background}
+            />
+          </View>
+
+          {!unlimited && (
+            <View style={styles.limitStepper}>
+              <TouchableOpacity
+                style={[styles.stepperBtn, { backgroundColor: colors.surface }]}
+                onPress={() => setMaxCalls(Math.max(1, maxCalls - 1))}
+                activeOpacity={0.7}
+              >
+                <Ionicons name="remove" size={sc(18)} color={colors.primary} />
+              </TouchableOpacity>
+              <View style={styles.stepperValueWrap}>
+                <Text style={[styles.stepperValue, { color: colors.onSurface }]}>{maxCalls}</Text>
+                <Text style={[styles.stepperUnit, { color: colors.onSurfaceVariant }]}>calls / day</Text>
               </View>
-              <Text style={[styles.cardDesc, { color: colors.onSurfaceVariant }]}>You'll automatically go available during these hours</Text>
-
-              <View style={styles.timeRangeRow}>
-                {/* Start Time */}
-                <View style={styles.timePicker}>
-                  <Text style={[styles.timeLabel, { color: colors.onSurfaceVariant }]}>From</Text>
-                  <View style={styles.timeColumn}>
-                    <TouchableOpacity style={styles.timeArrow} onPress={() => adjustTime('start', 5)} activeOpacity={0.5}>
-                      <Ionicons name="chevron-up" size={sc(20)} color={colors.primary} />
-                    </TouchableOpacity>
-                    <Text style={[styles.timeValue, { color: colors.onSurface }]}>{formatTime(startTime)}</Text>
-                    <TouchableOpacity style={styles.timeArrow} onPress={() => adjustTime('start', -5)} activeOpacity={0.5}>
-                      <Ionicons name="chevron-down" size={sc(20)} color={colors.primary} />
-                    </TouchableOpacity>
-                  </View>
-                </View>
-
-                {/* Separator */}
-                <View style={styles.timeSeparator}>
-                  <Ionicons name="arrow-forward" size={sc(24)} color={colors.primary} />
-                </View>
-
-                {/* End Time */}
-                <View style={styles.timePicker}>
-                  <Text style={[styles.timeLabel, { color: colors.onSurfaceVariant }]}>To</Text>
-                  <View style={styles.timeColumn}>
-                    <TouchableOpacity style={styles.timeArrow} onPress={() => adjustTime('end', 5)} activeOpacity={0.5}>
-                      <Ionicons name="chevron-up" size={sc(20)} color={colors.primary} />
-                    </TouchableOpacity>
-                    <Text style={[styles.timeValue, { color: colors.onSurface }]}>{formatTime(endTime)}</Text>
-                    <TouchableOpacity style={styles.timeArrow} onPress={() => adjustTime('end', -5)} activeOpacity={0.5}>
-                      <Ionicons name="chevron-down" size={sc(20)} color={colors.primary} />
-                    </TouchableOpacity>
-                  </View>
-                </View>
-              </View>
+              <TouchableOpacity
+                style={[styles.stepperBtn, { backgroundColor: colors.surface }]}
+                onPress={() => setMaxCalls(maxCalls + 1)}
+                activeOpacity={0.7}
+              >
+                <Ionicons name="add" size={sc(18)} color={colors.primary} />
+              </TouchableOpacity>
             </View>
           )}
+        </View>
 
-          {/* Max Daily Calls */}
-          <View style={[styles.card, { backgroundColor: colors.surfaceContainerLow }]}>
-            <View style={styles.cardHeader}>
-              <View style={[styles.cardIcon, { backgroundColor: colors.primaryContainer + '33' }]}>
-                <Ionicons name="call-outline" size={sc(20)} color={colors.primary} />
-              </View>
-              <Text style={[styles.cardTitle, { color: colors.onSurface }]}>Max Daily Calls</Text>
-            </View>
-            <Text style={[styles.cardDesc, { color: colors.onSurfaceVariant }]}>Limit how many calls you accept per day</Text>
-
-            <View style={styles.rowBetween}>
-              <Text style={[styles.rowText, { color: colors.onSurfaceVariant }]}>Unlimited calls</Text>
-              <Switch
-                value={unlimited}
-                onValueChange={setUnlimited}
-                trackColor={{ true: colors.primary }}
-                thumbColor={colors.background}
-              />
-            </View>
-
-            {!unlimited && (
-              <View style={styles.counterRow}>
-                <TouchableOpacity style={[styles.counterBtn, { backgroundColor: colors.surface }]} onPress={() => setMaxCalls(Math.max(1, maxCalls - 1))} activeOpacity={0.7}>
-                  <Ionicons name="remove" size={sc(22)} color={colors.primary} />
-                </TouchableOpacity>
-                <Text style={[styles.counterValue, { color: colors.onSurface }]}>{maxCalls} calls/day</Text>
-                <TouchableOpacity style={[styles.counterBtn, { backgroundColor: colors.surface }]} onPress={() => setMaxCalls(maxCalls + 1)} activeOpacity={0.7}>
-                  <Ionicons name="add" size={sc(22)} color={colors.primary} />
-                </TouchableOpacity>
-              </View>
-            )}
-          </View>
-
-          {/* Save Button */}
-          <TouchableOpacity
-            style={[styles.saveButton, { backgroundColor: colors.primary }]}
-            onPress={handleSave}
-            activeOpacity={0.8}
-          >
-            <Ionicons name="checkmark-circle" size={sc(20)} color={colors.onPrimary} />
-            <Text style={[styles.saveButtonText, { color: colors.onPrimary }]}>Save Schedule</Text>
-          </TouchableOpacity>
-
-          <View style={{ height: sc(40) }} />
-        </Animated.View>
+        <View style={{ height: sc(32) }} />
       </ScrollView>
     </View>
   );
@@ -228,40 +348,189 @@ export default function AvailabilityScheduleScreen({ navigation, theme }: any) {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  topBar: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: sc(18), paddingBottom: sc(12), paddingTop: sc(8) },
-  backButton: { width: sc(38), height: sc(38), borderRadius: sc(19), alignItems: 'center', justifyContent: 'center' },
-  topBarTitle: { fontSize: sc(16), fontWeight: '700', letterSpacing: -0.3 },
-  scrollContent: { paddingHorizontal: sc(18), paddingTop: sc(8), paddingBottom: sc(20) },
 
-  card: { borderRadius: sc(16), padding: sc(18), marginBottom: sc(14) },
-  cardHeader: { flexDirection: 'row', alignItems: 'center', gap: sc(10), marginBottom: sc(4) },
-  cardIcon: { width: sc(36), height: sc(36), borderRadius: sc(18), alignItems: 'center', justifyContent: 'center' },
-  cardTitle: { fontSize: sc(15), fontWeight: '700' },
-  cardDesc: { fontSize: sc(11), marginBottom: sc(12) },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: sc(18),
+    paddingVertical: sc(10),
+  },
+  headerBtn: {
+    width: sc(38),
+    height: sc(38),
+    borderRadius: sc(19),
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  headerTitle: { fontSize: sc(17), fontWeight: '700', letterSpacing: -0.3 },
 
-  rowBetween: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: sc(4), marginBottom: sc(4) },
-  rowText: { fontSize: sc(13) },
+  scrollContent: { paddingHorizontal: sc(18), paddingTop: sc(6) },
+
+  savedBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: sc(6),
+    borderRadius: sc(12),
+    paddingVertical: sc(10),
+    marginBottom: sc(14),
+  },
+  savedText: { fontSize: sc(14), fontWeight: '600' },
+
+  sectionCard: {
+    borderRadius: sc(16),
+    padding: sc(16),
+    marginBottom: sc(12),
+  },
+
+  sectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: sc(12),
+  },
+  sectionHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: sc(12),
+    marginBottom: sc(12),
+  },
+  sectionIcon: {
+    width: sc(34),
+    height: sc(34),
+    borderRadius: sc(17),
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  sectionTitle: { fontSize: sc(15), fontWeight: '700' },
+  sectionSubtitle: { fontSize: sc(12), marginTop: sc(2), lineHeight: sc(18) },
 
   // Days
-  daysGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: sc(8), marginTop: sc(8) },
-  dayChip: { paddingHorizontal: sc(14), paddingVertical: sc(10), borderRadius: sc(20) },
-  dayText: { fontSize: sc(13) },
+  daysRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: sc(4),
+    marginBottom: sc(10),
+  },
+  dayCircle: {
+    width: sc(42),
+    height: sc(42),
+    borderRadius: sc(21),
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+  },
+  dayCircleText: { fontSize: sc(14), fontWeight: '700' },
+  daysSummary: { fontSize: sc(12), fontWeight: '500' },
 
-  // Time range
-  timeRangeRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: sc(12) },
-  timePicker: { flex: 1, alignItems: 'center' },
-  timeLabel: { fontSize: sc(10), fontWeight: '600', marginBottom: sc(8) },
-  timeColumn: { alignItems: 'center' },
-  timeArrow: { paddingVertical: sc(6), paddingHorizontal: sc(16) },
-  timeValue: { fontSize: sc(22), fontWeight: '800', paddingVertical: sc(4) },
-  timeSeparator: { paddingHorizontal: sc(12) },
+  // Time
+  timeSectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: sc(16),
+  },
+  twentyFourBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: sc(4),
+    borderRadius: sc(14),
+    paddingHorizontal: sc(10),
+    paddingVertical: sc(6),
+  },
+  twentyFourText: { fontSize: sc(12), fontWeight: '700' },
 
-  // Counter
-  counterRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: sc(20), marginTop: sc(12) },
-  counterBtn: { width: sc(48), height: sc(48), borderRadius: sc(24), alignItems: 'center', justifyContent: 'center' },
-  counterValue: { fontSize: sc(20), fontWeight: '800', minWidth: sc(100), textAlign: 'center' },
+  timeBlocksRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: sc(8),
+  },
+  timeBlock: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  timeBlockLabel: {
+    fontSize: sc(11),
+    fontWeight: '600',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginBottom: sc(8),
+  },
+  timeWheelRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: sc(6),
+  },
+  wheelCol: {
+    alignItems: 'center',
+    minWidth: sc(44),
+  },
+  wheelArrow: {
+    paddingVertical: sc(4),
+    paddingHorizontal: sc(8),
+  },
+  wheelValue: {
+    fontSize: sc(22),
+    fontWeight: '800',
+    minWidth: sc(30),
+    textAlign: 'center',
+  },
+  wheelUnit: {
+    fontSize: sc(10),
+    marginTop: sc(2),
+  },
+  wheelColon: {
+    fontSize: sc(20),
+    fontWeight: '600',
+    paddingBottom: sc(12),
+  },
+  ampmBtn: {
+    borderRadius: sc(8),
+    paddingHorizontal: sc(8),
+    paddingVertical: sc(4),
+    marginVertical: sc(2),
+    minWidth: sc(40),
+    alignItems: 'center',
+  },
+  ampmText: { fontSize: sc(12), fontWeight: '700' },
 
-  // Save
-  saveButton: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: sc(8), borderRadius: sc(26), paddingVertical: sc(16), minHeight: 52, marginTop: sc(8) },
-  saveButtonText: { fontSize: sc(16), fontWeight: '700' },
+  timeConnector: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: sc(4),
+    paddingTop: sc(14),
+  },
+  dotLine: {
+    width: 1,
+    height: sc(14),
+    borderRadius: 0.5,
+  },
+
+  // Limit
+  limitToggleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginTop: sc(4),
+  },
+  limitToggleText: { fontSize: sc(14), fontWeight: '600' },
+
+  limitStepper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: sc(20),
+    marginTop: sc(16),
+  },
+  stepperBtn: {
+    width: sc(44),
+    height: sc(44),
+    borderRadius: sc(22),
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  stepperValueWrap: { alignItems: 'center', minWidth: sc(80) },
+  stepperValue: { fontSize: sc(28), fontWeight: '800', letterSpacing: -0.5 },
+  stepperUnit: { fontSize: sc(11), marginTop: sc(-2), fontWeight: '500' },
 });

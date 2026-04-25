@@ -79,23 +79,7 @@ export default function HomeScreen({ navigation, theme }: any) {
           <Text style={[styles.quoteAttrib, { color: colors.onSurfaceVariant }]}>— Sanctuary Daily</Text>
         </View>
 
-        {/* Bento Grid Actions */}
-        <View style={styles.bentoGrid}>
-          <TouchableOpacity style={[styles.bentoDanger, { backgroundColor: colors.errorContainer + '1A' }]} onPress={() => navigation.navigate('SafetyCenter')} activeOpacity={0.8}>
-            <Ionicons name="shield-outline" size={sc(28)} color={colors.error} />
-            <View>
-              <Text style={[styles.bentoDangerTitle, { color: colors.onErrorContainer }]}>Safety Center</Text>
-              <Text style={[styles.bentoDesc, { color: colors.onSurfaceVariant }]}>Resources & Crisis Help</Text>
-            </View>
-          </TouchableOpacity>
-          <TouchableOpacity style={[styles.bentoCard, { backgroundColor: colors.surfaceContainerHigh }]} activeOpacity={0.8} onPress={() => navigation.navigate('ListenerDashboard')}>
-            <Ionicons name="sparkles" size={sc(28)} color={colors.secondary} />
-            <View>
-              <Text style={[styles.bentoTitle, { color: colors.onSurface }]}>Your Journey</Text>
-              <Text style={[styles.bentoDesc, { color: colors.onSurfaceVariant }]}>Reflection History</Text>
-            </View>
-          </TouchableOpacity>
-        </View>
+
       </ScrollView>
 
       <BottomNav navigation={navigation} activeScreen="Home" theme={theme} />
@@ -124,16 +108,7 @@ const styles = StyleSheet.create({
   quoteGlow2: { position: 'absolute', left: -sc(12), bottom: -sc(12), width: sc(64), height: sc(64), borderRadius: sc(32) },
   quoteText: { fontSize: sc(15), fontWeight: '700', lineHeight: sc(22), marginTop: sc(10) },
   quoteAttrib: { marginTop: sc(10), fontSize: sc(10), fontWeight: '500' },
-  bentoGrid: { flexDirection: 'row', gap: sc(10), marginBottom: sc(20) },
-  bentoDanger: { flex: 1, borderRadius: sc(14), padding: sc(18), justifyContent: 'space-between' },
-  bentoCard: { flex: 1, borderRadius: sc(14), padding: sc(18), justifyContent: 'space-between' },
-  bentoTitle: { fontSize: sc(13), fontWeight: '700' },
-  bentoDangerTitle: { fontSize: sc(13), fontWeight: '700' },
-  bentoDesc: { fontSize: sc(10), marginTop: sc(2) },
-  navItem: { alignItems: 'center', paddingVertical: sc(6), paddingHorizontal: sc(20), borderRadius: sc(20), minHeight: 44, justifyContent: 'center' },
-  navItemActive: { alignItems: 'center', paddingVertical: sc(6), paddingHorizontal: sc(20), borderRadius: sc(20), minHeight: 44, justifyContent: 'center' },
-  navLabel: { fontSize: sc(10), fontWeight: '600', marginTop: 2 },
-  navLabelActive: { fontSize: sc(10), fontWeight: '600', marginTop: 2 },
+
   bgBlur1: { position: 'absolute', top: -sc(40), left: -sc(40), width: sc(160), height: sc(160), borderRadius: sc(80) },
   bgBlur2: { position: 'absolute', bottom: 0, right: -sc(40), width: sc(160), height: sc(160), borderRadius: sc(80) },
 });

@@ -34,7 +34,7 @@ export default function ReportConfirmationScreen({ route, navigation, theme }: a
   }, []);
 
   const handleDone = () => {
-    navigation.navigate('Reflection');
+    navigation.navigate('Home');
   };
 
   return (

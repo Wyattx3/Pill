@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Dimensions, Animated, Easing, TextInput } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Dimensions, Animated, Easing, TextInput, BackHandler } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -149,6 +149,26 @@ export default function TrustSystemScreen({ navigation, theme }: any) {
   const switchTab = (tab: 'inbox' | 'cases') => {
     setActiveTab(tab);
   };
+
+  // Intercept hardware back button when detail overlay is open
+  useEffect(() => {
+    const subscription = BackHandler.addEventListener('hardwareBackPress', () => {
+      if (selectedInbox) {
+        setSelectedInbox(null);
+        return true;
+      }
+      if (selectedCase) {
+        setSelectedCase(null);
+        return true;
+      }
+      if (showCompose) {
+        setShowCompose(false);
+        return true;
+      }
+      return false;
+    });
+    return () => subscription.remove();
+  }, [selectedInbox, selectedCase, showCompose]);
 
   return (
     <View style={[styles.root, { backgroundColor: colors.background }]}>

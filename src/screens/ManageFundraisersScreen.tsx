@@ -17,7 +17,7 @@ import {
   getMyFundraisers,
   updateMyFundraiser,
   deleteMyFundraiser,
-  getAllComments,
+  getCommentsForFundraiser,
   getReplies,
   MyFundraiser,
 } from '../utils/donations';
@@ -108,7 +108,7 @@ const PixelDonut = ({ pct, color, size = 140 }: { pct: number; color: string; si
 };
 
 // ── Clean Professional Analytics Screen ──
-function AnalyticsScreen({ fund, data, onClose, colors }: { fund: MyFundraiser; data: { comments: number; replies: number; pct: number; commenters: { name: string; amount: number; type: string }[] }; onClose: () => void; colors: any }) {
+function AnalyticsScreen({ fund, data, onClose, colors }: { fund: MyFundraiser; data: { comments: number; replies: number; pct: number; raisedAmount: number; donorCount: number; commenters: { name: string; amount: number; type: string }[] }; onClose: () => void; colors: any }) {
   const insets = useSafeAreaInsets();
   const fmt = (n: number) => `$${n.toLocaleString('en-US')}`;
   const totalActivity = data.comments + data.replies;
@@ -148,7 +148,7 @@ function AnalyticsScreen({ fund, data, onClose, colors }: { fund: MyFundraiser; 
 
           {/* Raised Amount */}
           <View style={styles.heroAmounts}>
-            <Text style={[styles.heroRaised, { color: colors.onSurface }]}>{fmt(fund.raisedAmount)}</Text>
+            <Text style={[styles.heroRaised, { color: colors.onSurface }]}>{fmt(data.raisedAmount)}</Text>
             <Text style={[styles.heroGoal, { color: colors.onSurfaceVariant }]}>raised of {fmt(fund.goalAmount)}</Text>
           </View>
         </View>
@@ -157,7 +157,7 @@ function AnalyticsScreen({ fund, data, onClose, colors }: { fund: MyFundraiser; 
         <View style={styles.statsRow}>
           <View style={[styles.statItem, { backgroundColor: colors.surfaceContainerLow }]}>
             <Ionicons name="people" size={sc(18)} color={colors.primary} style={styles.statItemIcon} />
-            <Text style={[styles.statItemValue, { color: colors.onSurface }]}>{fund.donorCount}</Text>
+            <Text style={[styles.statItemValue, { color: colors.onSurface }]}>{data.donorCount}</Text>
             <Text style={[styles.statItemLabel, { color: colors.onSurfaceVariant }]}>Donors</Text>
           </View>
           <View style={[styles.statItem, { backgroundColor: colors.surfaceContainerLow }]}>
@@ -258,7 +258,7 @@ export default function ManageFundraisersScreen({ navigation, theme }: any) {
   const [fundraisers, setFundraisers] = useState<MyFundraiser[]>([]);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [analyticsFund, setAnalyticsFund] = useState<MyFundraiser | null>(null);
-  const [analyticsData, setAnalyticsData] = useState<{ comments: number; replies: number; pct: number; commenters: { name: string; amount: number; type: string }[] } | null>(null);
+  const [analyticsData, setAnalyticsData] = useState<{ comments: number; replies: number; pct: number; raisedAmount: number; donorCount: number; commenters: { name: string; amount: number; type: string }[] } | null>(null);
   const [analyticsLoading, setAnalyticsLoading] = useState(false);
 
   useFocusEffect(
@@ -276,19 +276,31 @@ export default function ManageFundraisersScreen({ navigation, theme }: any) {
     setAnalyticsLoading(true);
     setAnalyticsFund(fund);
 
-    // Get all comments and filter by this fundraiser's ID
-    const allComments = await getAllComments();
-    const cms = allComments.filter((c) => c.postId === fund.id).sort((a, b) => b.timestamp - a.timestamp);
+    // Reload fresh data so raisedAmount/donorCount reflect latest donations
+    const freshList = await getMyFundraisers();
+    const freshFund = freshList.find((f) => f.id === fund.id) || fund;
+
+    // Use getCommentsForFundraiser for robust comment retrieval (includes title fallback)
+    const cms = await getCommentsForFundraiser(freshFund.id);
 
     let totalReplies = 0;
     const commenters: { name: string; amount: number; type: string }[] = [];
+    let totalRaisedFromComments = 0;
     for (const c of cms) {
       const replies = await getReplies(c.id);
       totalReplies += replies.length;
       commenters.push({ name: c.donorName || 'Anonymous', amount: c.amount || 0, type: c.donationType });
+      totalRaisedFromComments += c.amount || 0;
     }
-    const pct = fund.goalAmount > 0 ? Math.round((fund.raisedAmount / fund.goalAmount) * 100) : 0;
-    setAnalyticsData({ comments: cms.length, replies: totalReplies, pct, commenters });
+
+    // Use the freshest raisedAmount from storage; fallback to comment sum if needed
+    const totalRaised = Math.max(freshFund.raisedAmount || 0, totalRaisedFromComments);
+    const donorCount = cms.length > 0
+      ? new Set(cms.map((c) => c.donorName || 'Anonymous')).size
+      : (freshFund.donorCount || 0);
+
+    const pct = freshFund.goalAmount > 0 ? Math.round((totalRaised / freshFund.goalAmount) * 100) : 0;
+    setAnalyticsData({ comments: cms.length, replies: totalReplies, pct, raisedAmount: totalRaised, donorCount, commenters });
     setAnalyticsLoading(false);
   };
 

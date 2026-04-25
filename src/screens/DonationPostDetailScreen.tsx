@@ -74,6 +74,12 @@ export default function DonationPostDetailScreen({ navigation, route, theme }: a
   const progress = fundraiser && fundraiser.goalAmount > 0
     ? Math.min((fundraiser.raisedAmount / fundraiser.goalAmount) * 100, 100)
     : 0;
+  const progressFill = fundraiser && fundraiser.raisedAmount > 0 && progress > 0
+    ? Math.max(progress, 1)
+    : progress;
+  const progressLabel = fundraiser && fundraiser.raisedAmount > 0 && progress > 0 && progress < 1
+    ? '<1'
+    : `${Math.round(progress)}`;
 
   const formatCurrency = (n: number) =>
     `$${n.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
@@ -180,11 +186,11 @@ export default function DonationPostDetailScreen({ navigation, route, theme }: a
               colors={[colors.primaryDim, colors.primaryFixedDim]}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 0 }}
-              style={[styles.progressFill, { width: `${progress}%` }]}
+              style={[styles.progressFill, { width: `${progressFill}%` }]}
             />
           </View>
           <Text style={[styles.progressPct, { color: colors.onSurfaceVariant }]}>
-            {Math.round(progress)}% funded
+            {progressLabel}% funded
           </Text>
         </View>
 

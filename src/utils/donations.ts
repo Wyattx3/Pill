@@ -215,11 +215,24 @@ export async function addComment(comment: DonationComment): Promise<void> {
     await AsyncStorage.setItem(KEY_FUNDRAISERS, JSON.stringify(fundraisers));
   }
 
-  // Also update in my fundraisers so amounts stay in sync
+  // Also update in my fundraisers so amounts stay in sync.
+  // NOTE: comment.postId is the public feed fundraiser ID which may differ from
+  // MyFundraiser IDs, so we first try direct ID match, then fall back to title match.
   const myFundraisers = await getMyFundraisers();
-  const myIdx = myFundraisers.findIndex((f) => f.id === comment.postId);
+  let myIdx = myFundraisers.findIndex((f) => f.id === comment.postId);
+
+  if (myIdx === -1) {
+    // Fallback: find the public fundraiser by postId, then match MyFundraiser by title
+    const publicFundraisers = await getStoredFundraisers();
+    const publicF = publicFundraisers.find((f) => f.id === comment.postId);
+    if (publicF) {
+      myIdx = myFundraisers.findIndex((f) => f.title === publicF.title);
+    }
+  }
+
   if (myIdx !== -1) {
     myFundraisers[myIdx].raisedAmount += comment.amount;
+    myFundraisers[myIdx].donorCount = (myFundraisers[myIdx].donorCount || 0) + 1;
     await AsyncStorage.setItem(KEY_MY_FUNDRAISERS, JSON.stringify(myFundraisers));
   }
 }
@@ -625,7 +638,14 @@ export interface PayoutRecord {
   completedAt?: number;
 }
 
+export interface PayoutSchedule {
+  cycle: 'weekly' | 'monthly';
+  paymentMethod: 'kpay' | 'wavepay' | 'paypal' | null;
+  accountValue: string;
+}
+
 const KEY_PAYOUTS = '@pill_payouts';
+const KEY_PAYOUT_SCHEDULE = '@pill_payout_schedule';
 
 export async function getPayouts(): Promise<PayoutRecord[]> {
   const raw = await AsyncStorage.getItem(KEY_PAYOUTS);
@@ -643,4 +663,14 @@ export async function requestPayout(amount: number): Promise<PayoutRecord> {
   payouts.unshift(payout);
   await AsyncStorage.setItem(KEY_PAYOUTS, JSON.stringify(payouts));
   return payout;
+}
+
+export async function getPayoutSchedule(): Promise<PayoutSchedule> {
+  const raw = await AsyncStorage.getItem(KEY_PAYOUT_SCHEDULE);
+  if (raw) return JSON.parse(raw);
+  return { cycle: 'monthly', paymentMethod: null, accountValue: '' };
+}
+
+export async function setPayoutSchedule(schedule: PayoutSchedule): Promise<void> {
+  await AsyncStorage.setItem(KEY_PAYOUT_SCHEDULE, JSON.stringify(schedule));
 }

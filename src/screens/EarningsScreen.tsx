@@ -1,8 +1,10 @@
-import React, { useState, useRef } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Dimensions, TextInput, Animated, Easing } from 'react-native';
+import React, { useState, useCallback } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Dimensions } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useFocusEffect } from '@react-navigation/native';
+import { getPayoutSchedule } from '../utils/donations';
 
 const { width: W } = Dimensions.get('window');
 const sc = (v: number) => Math.round(v * (W / 390));
@@ -24,62 +26,25 @@ export default function EarningsScreen({ navigation, theme }: any) {
   const insets = useSafeAreaInsets();
   const { colors, isDark } = theme;
 
-  // Payout setup state
-  const [showSetup, setShowSetup] = useState(false);
-  const [step, setStep] = useState<'cycle' | 'method' | 'account'>('cycle');
+  // Payout schedule state
   const [payoutCycle, setPayoutCycle] = useState<'weekly' | 'monthly'>('monthly');
   const [selectedPayment, setSelectedPayment] = useState<'kpay' | 'wavepay' | 'paypal' | null>(null);
   const [accountValue, setAccountValue] = useState('');
-  const [saved, setSaved] = useState(false);
 
-  // Animate form entrance
-  const fadeAnim = useRef(new Animated.Value(0)).current;
-  const slideAnim = useRef(new Animated.Value(30)).current;
+  useFocusEffect(
+    useCallback(() => {
+      loadSchedule();
+    }, [])
+  );
 
-  const animateIn = () => {
-    fadeAnim.setValue(0);
-    slideAnim.setValue(30);
-    Animated.parallel([
-      Animated.timing(fadeAnim, { toValue: 1, duration: 350, easing: Easing.out(Easing.ease), useNativeDriver: true }),
-      Animated.timing(slideAnim, { toValue: 0, duration: 350, easing: Easing.out(Easing.ease), useNativeDriver: true }),
-    ]).start();
+  const loadSchedule = async () => {
+    const schedule = await getPayoutSchedule();
+    setPayoutCycle(schedule.cycle);
+    setSelectedPayment(schedule.paymentMethod);
+    setAccountValue(schedule.accountValue);
   };
 
-  const openSetup = () => {
-    setShowSetup(true);
-    setStep('cycle');
-    setTimeout(animateIn, 50);
-  };
-
-  const closeSetup = () => {
-    Animated.parallel([
-      Animated.timing(fadeAnim, { toValue: 0, duration: 200, useNativeDriver: true }),
-      Animated.timing(slideAnim, { toValue: 30, duration: 200, useNativeDriver: true }),
-    ]).start(() => setShowSetup(false));
-  };
-
-  const handleSave = () => {
-    setSaved(true);
-    setTimeout(() => {
-      setShowSetup(false);
-      setSaved(false);
-      setStep('cycle');
-      setSelectedPayment(null);
-      setAccountValue('');
-    }, 1500);
-  };
-
-  const goNext = () => {
-    if (step === 'cycle') setStep('method');
-    else if (step === 'method' && selectedPayment) { setStep('account'); setAccountValue(''); }
-  };
-
-  const goBack = () => {
-    if (step === 'method') setStep('cycle');
-    else if (step === 'account') setStep('method');
-  };
-
-  const currentMethod = paymentMethods.find(m => m.id === selectedPayment);
+  const currentMethod = paymentMethods.find((m) => m.id === selectedPayment);
 
   return (
     <View style={[styles.container, { paddingTop: insets.top, backgroundColor: colors.background }]}>
@@ -113,166 +78,23 @@ export default function EarningsScreen({ navigation, theme }: any) {
         </View>
 
         {/* Payout Config Card */}
-        {saved ? (
-          <View style={[styles.savedCard, { backgroundColor: colors.primaryContainer + '22', borderColor: colors.primary + '44', borderWidth: 1 }]}>
-            <Ionicons name="checkmark-circle" size={sc(28)} color={colors.primary} />
-            <Text style={[styles.savedText, { color: colors.primary }]}>Payout settings saved</Text>
-          </View>
-        ) : !showSetup ? (
-          <View style={[styles.configCard, { backgroundColor: colors.surfaceContainerLow }]}>
-            <View style={styles.configRow}>
-              <View style={[styles.configIcon, { backgroundColor: colors.primaryContainer + '33' }]}>
-                <Ionicons name="repeat" size={sc(20)} color={colors.primary} />
-              </View>
-              <View style={styles.configInfo}>
-                <Text style={[styles.configLabel, { color: colors.onSurface }]}>Payout Schedule</Text>
-                <Text style={[styles.configValue, { color: colors.onSurfaceVariant }]}>
-                  {payoutCycle === 'weekly' ? 'Weekly' : 'Monthly'}
-                  {selectedPayment ? ` · ${currentMethod?.label}` : ' · Not set up'}
-                </Text>
-              </View>
-              <TouchableOpacity style={[styles.configEdit, { backgroundColor: colors.primary }]} onPress={openSetup} activeOpacity={0.7}>
-                <Text style={[styles.configEditText, { color: colors.onPrimary }]}>Edit</Text>
-              </TouchableOpacity>
+        <View style={[styles.configCard, { backgroundColor: colors.surfaceContainerLow }]}>
+          <View style={styles.configRow}>
+            <View style={[styles.configIcon, { backgroundColor: colors.primaryContainer + '33' }]}>
+              <Ionicons name="repeat" size={sc(20)} color={colors.primary} />
             </View>
-          </View>
-        ) : (
-          <Animated.View style={{ opacity: fadeAnim, transform: [{ translateY: slideAnim }] }}>
-            <View style={[styles.setupCard, { backgroundColor: colors.surfaceContainerLow }]}>
-              {/* Mini step dots */}
-              <View style={styles.dotsRow}>
-                {['cycle', 'method', 'account'].map((s, i) => {
-                  const isCurrent = s === step;
-                  const isDone = (s === 'cycle' && step !== 'cycle') || (s === 'method' && step === 'account');
-                  return (
-                    <View key={s} style={styles.dotGroup}>
-                      <View style={[styles.dot, { backgroundColor: isCurrent ? colors.primary : isDone ? colors.primary : colors.outlineVariant + '33' }]}>
-                        {isDone && <Ionicons name="checkmark" size={sc(10)} color={colors.onPrimary} />}
-                      </View>
-                      {i < 2 && <View style={[styles.dotLine, { backgroundColor: isDone ? colors.primary : colors.outlineVariant + '22' }]} />}
-                    </View>
-                  );
-                })}
-              </View>
-
-              {/* Step 1: Cycle */}
-              {step === 'cycle' && (
-                <View style={styles.stepBody}>
-                  <Text style={[styles.stepHeading, { color: colors.onSurface }]}>Payout Frequency</Text>
-                  {(['weekly', 'monthly'] as const).map((c) => {
-                    const active = payoutCycle === c;
-                    return (
-                      <TouchableOpacity
-                        key={c}
-                        style={[styles.optionCard, {
-                          backgroundColor: active ? colors.primaryContainer + '22' : colors.surface,
-                          borderColor: active ? colors.primary : colors.surfaceContainerHigh,
-                          borderWidth: 2,
-                        }]}
-                        onPress={() => setPayoutCycle(c)}
-                        activeOpacity={0.7}
-                      >
-                        <View style={styles.optionLeft}>
-                          <Ionicons
-                            name={c === 'weekly' ? 'calendar-outline' : 'calendar-clear-outline'}
-                            size={sc(22)}
-                            color={active ? colors.primary : colors.onSurfaceVariant}
-                          />
-                          <View style={{ marginLeft: sc(12) }}>
-                            <Text style={[styles.optionTitle, { color: colors.onSurface, fontWeight: active ? '700' : '600' }]}>
-                              {c === 'weekly' ? 'Weekly' : 'Monthly'}
-                            </Text>
-                            <Text style={[styles.optionDesc, { color: colors.onSurfaceVariant }]}>
-                              {c === 'weekly' ? 'Get paid every 7 days' : 'Get paid at the end of each month'}
-                            </Text>
-                          </View>
-                        </View>
-                        <View style={[styles.radio, { borderColor: active ? colors.primary : colors.outlineVariant }]}>
-                          {active && <View style={[styles.radioDot, { backgroundColor: colors.primary }]} />}
-                        </View>
-                      </TouchableOpacity>
-                    );
-                  })}
-                </View>
-              )}
-
-              {/* Step 2: Method */}
-              {step === 'method' && (
-                <View style={styles.stepBody}>
-                  <Text style={[styles.stepHeading, { color: colors.onSurface }]}>Payout Method</Text>
-                  {paymentMethods.map((pm) => {
-                    const active = selectedPayment === pm.id;
-                    return (
-                      <TouchableOpacity
-                        key={pm.id}
-                        style={[styles.optionCard, {
-                          backgroundColor: colors.surface,
-                          borderColor: active ? pm.accent : colors.surfaceContainerHigh,
-                          borderWidth: active ? 2 : 1,
-                        }]}
-                        onPress={() => setSelectedPayment(pm.id)}
-                        activeOpacity={0.7}
-                      >
-                        <View style={[styles.optionIconWrap, { backgroundColor: pm.accent + '18' }]}>
-                          <Ionicons name={pm.icon as any} size={sc(20)} color={pm.accent} />
-                        </View>
-                        <View style={{ flex: 1, marginLeft: sc(12) }}>
-                          <Text style={[styles.optionTitle, { color: colors.onSurface, fontWeight: active ? '700' : '600' }]}>{pm.label}</Text>
-                          <Text style={[styles.optionDesc, { color: colors.onSurfaceVariant }]}>{pm.desc}</Text>
-                        </View>
-                        <View style={[styles.radio, { borderColor: active ? pm.accent : colors.outlineVariant }]}>
-                          {active && <View style={[styles.radioDot, { backgroundColor: pm.accent }]} />}
-                        </View>
-                      </TouchableOpacity>
-                    );
-                  })}
-                </View>
-              )}
-
-              {/* Step 3: Account */}
-              {step === 'account' && (
-                <View style={styles.stepBody}>
-                  <Text style={[styles.stepHeading, { color: colors.onSurface }]}>
-                    {currentMethod?.label} Account
-                  </Text>
-                  <View style={[styles.inputField, { backgroundColor: colors.surface, borderColor: colors.surfaceContainerHigh, borderWidth: 1 }]}>
-                    <Ionicons
-                      name={selectedPayment === 'paypal' ? 'mail-outline' : 'phone-portrait-outline'}
-                      size={sc(18)}
-                      color={colors.onSurfaceVariant}
-                    />
-                    <TextInput
-                      style={[styles.textInput, { color: colors.onSurface }]}
-                      placeholder={selectedPayment === 'paypal' ? 'Enter your PayPal email' : 'Enter your phone number'}
-                      placeholderTextColor={colors.onSurfaceVariant + '66'}
-                      keyboardType={selectedPayment === 'paypal' ? 'email-address' : 'phone-pad'}
-                      autoCapitalize="none"
-                      value={accountValue}
-                      onChangeText={setAccountValue}
-                    />
-                  </View>
-                </View>
-              )}
-
-              {/* Nav Buttons */}
-              <View style={styles.navRow}>
-                <TouchableOpacity style={[styles.navBack, { borderColor: colors.outlineVariant + '44' }]} onPress={goBack} activeOpacity={0.7}>
-                  <Ionicons name="arrow-back" size={sc(16)} color={colors.onSurfaceVariant} />
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={[styles.navForward, { backgroundColor: (step === 'account' ? accountValue.length > 0 : true) ? colors.primary : colors.outlineVariant + '44' }]}
-                  onPress={step === 'account' ? handleSave : goNext}
-                  activeOpacity={0.8}
-                >
-                  <Text style={[styles.navForwardText, { color: colors.onPrimary }]}>
-                    {step === 'account' ? 'Save' : 'Next'}
-                  </Text>
-                  <Ionicons name={step === 'account' ? 'checkmark' : 'arrow-forward'} size={sc(18)} color={colors.onPrimary} />
-                </TouchableOpacity>
-              </View>
+            <View style={styles.configInfo}>
+              <Text style={[styles.configLabel, { color: colors.onSurface }]}>Payout Schedule</Text>
+              <Text style={[styles.configValue, { color: colors.onSurfaceVariant }]}>
+                {payoutCycle === 'weekly' ? 'Weekly' : 'Monthly'}
+                {selectedPayment ? ` · ${currentMethod?.label}` : ' · Not set up'}
+              </Text>
             </View>
-          </Animated.View>
-        )}
+            <TouchableOpacity style={[styles.configEdit, { backgroundColor: colors.primary }]} onPress={() => navigation.navigate('PayoutScheduleEdit')} activeOpacity={0.7}>
+              <Text style={[styles.configEditText, { color: colors.onPrimary }]}>Edit</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
 
         {/* Chart */}
         <View style={[styles.chartCard, { backgroundColor: colors.surfaceContainerLow }]}>
@@ -349,10 +171,6 @@ const styles = StyleSheet.create({
   summaryItemLabel: { fontSize: sc(10), marginTop: sc(2) },
   summaryDivider: { width: 1 },
 
-  // Saved confirmation
-  savedCard: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: sc(8), borderRadius: sc(14), paddingVertical: sc(16), marginBottom: sc(14) },
-  savedText: { fontSize: sc(14), fontWeight: '700' },
-
   // Config summary card
   configCard: { borderRadius: sc(14), marginBottom: sc(14) },
   configRow: { flexDirection: 'row', alignItems: 'center', padding: sc(16) },
@@ -362,38 +180,6 @@ const styles = StyleSheet.create({
   configValue: { fontSize: sc(11), marginTop: sc(2) },
   configEdit: { borderRadius: sc(20), paddingHorizontal: sc(16), paddingVertical: sc(8) },
   configEditText: { fontSize: sc(13), fontWeight: '700' },
-
-  // Setup card
-  setupCard: { borderRadius: sc(16), padding: sc(18), marginBottom: sc(14) },
-
-  // Step dots
-  dotsRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginBottom: sc(20) },
-  dotGroup: { flexDirection: 'row', alignItems: 'center' },
-  dot: { width: sc(10), height: sc(10), borderRadius: sc(5), alignItems: 'center', justifyContent: 'center' },
-  dotLine: { width: sc(30), height: 2, borderRadius: 1, marginHorizontal: sc(4) },
-
-  // Step body
-  stepBody: { marginBottom: sc(16) },
-  stepHeading: { fontSize: sc(16), fontWeight: '700', marginBottom: sc(14), textAlign: 'center' },
-
-  // Option cards
-  optionCard: { flexDirection: 'row', alignItems: 'center', borderRadius: sc(14), padding: sc(16), marginBottom: sc(10) },
-  optionLeft: { flexDirection: 'row', alignItems: 'center' },
-  optionIconWrap: { width: sc(38), height: sc(38), borderRadius: sc(19), alignItems: 'center', justifyContent: 'center' },
-  optionTitle: { fontSize: sc(14) },
-  optionDesc: { fontSize: sc(11), marginTop: sc(2) },
-  radio: { width: sc(20), height: sc(20), borderRadius: sc(10), borderWidth: 2, alignItems: 'center', justifyContent: 'center' },
-  radioDot: { width: sc(10), height: sc(10), borderRadius: sc(5) },
-
-  // Input
-  inputField: { flexDirection: 'row', alignItems: 'center', borderRadius: sc(14), paddingHorizontal: sc(16), minHeight: sc(54), gap: sc(10) },
-  textInput: { flex: 1, fontSize: sc(15), paddingVertical: sc(14) },
-
-  // Nav
-  navRow: { flexDirection: 'row', alignItems: 'center', marginTop: sc(8), gap: sc(10) },
-  navBack: { width: sc(46), height: sc(46), borderRadius: sc(23), borderWidth: 1, alignItems: 'center', justifyContent: 'center' },
-  navForward: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', borderRadius: sc(23), flex: 1, paddingVertical: sc(14), minHeight: sc(48), gap: sc(6) },
-  navForwardText: { fontSize: sc(15), fontWeight: '700' },
 
   // Chart
   chartCard: { borderRadius: sc(14), padding: sc(18), marginBottom: sc(14) },
