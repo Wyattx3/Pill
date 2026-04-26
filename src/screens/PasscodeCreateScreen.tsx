@@ -4,6 +4,7 @@ import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import OtterMascot from '../components/OtterMascot';
 
 const { width: W } = Dimensions.get('window');
 const sc = (v: number) => Math.round(v * (W / 390));
@@ -117,6 +118,12 @@ export default function PasscodeCreateScreen({ navigation, theme }: any) {
       </View>
 
       <View style={styles.centerContent}>
+        <OtterMascot
+          name={step === 'create' ? 'passcodeCreate' : 'passcodeConfirm'}
+          size={sc(148)}
+          containerStyle={styles.secureMascot}
+        />
+
         {/* Subtitle */}
         <Text style={[styles.subtitle, { color: colors.onSurfaceVariant }]}>
           {step === 'create'
@@ -203,6 +210,7 @@ const styles = StyleSheet.create({
   backBtn: { width: sc(40), height: sc(40), borderRadius: sc(20), alignItems: 'center', justifyContent: 'center' },
   topTitle: { fontSize: sc(16), fontWeight: '700', letterSpacing: -0.3 },
   centerContent: { flex: 1, alignItems: 'center', justifyContent: 'center', width: '100%' },
+  secureMascot: { marginBottom: sc(8) },
   subtitle: { fontSize: sc(13), marginBottom: sc(24) },
 
   pinDots: { flexDirection: 'row', justifyContent: 'center', gap: sc(24), marginBottom: sc(8) },

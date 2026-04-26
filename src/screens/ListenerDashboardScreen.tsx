@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Dimensions, Switc
 import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import OtterMascot from '../components/OtterMascot';
 
 const { width: W } = Dimensions.get('window');
 const sc = (v: number) => Math.round(v * (W / 390));
@@ -89,9 +90,7 @@ export default function ListenerDashboardScreen({ navigation, theme }: any) {
           activeOpacity={0.7}
         >
           <View style={styles.availLeft}>
-            <View style={[styles.availIconCircle, { backgroundColor: colors.surface }]}>
-              <Ionicons name={isAvailable ? 'checkmark-circle' : 'pause-circle'} size={sc(24)} color={isAvailable ? colors.primary : colors.outlineVariant} />
-            </View>
+            <OtterMascot name="tea" size={sc(56)} containerStyle={styles.availMascot} />
             <View>
               <Text style={[styles.availTitle, { color: colors.onSurface }]}>{isAvailable ? 'You Are Available' : 'You Are Paused'}</Text>
               <Text style={[styles.availDesc, { color: colors.onSurfaceVariant }]}>
@@ -275,7 +274,7 @@ const styles = StyleSheet.create({
 
   availCard: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', borderRadius: sc(14), paddingHorizontal: sc(18), paddingVertical: sc(14), marginBottom: sc(6) },
   availLeft: { flexDirection: 'row', alignItems: 'center', gap: sc(10) },
-  availIconCircle: { width: sc(40), height: sc(40), borderRadius: sc(20), alignItems: 'center', justifyContent: 'center' },
+  availMascot: { width: sc(56), alignItems: 'center', flexShrink: 0 },
   availTitle: { fontSize: sc(14), fontWeight: '700' },
   availDesc: { fontSize: sc(11), marginTop: sc(2) },
 

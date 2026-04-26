@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, Dimensions, Animated } from '
 import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import OtterMascot from '../components/OtterMascot';
 
 const { width: W } = Dimensions.get('window');
 const sc = (v: number) => Math.round(v * (W / 390));
@@ -44,6 +45,7 @@ export default function ReportConfirmationScreen({ route, navigation, theme }: a
       <View style={styles.content}>
         {/* Animated Success Icon */}
         <Animated.View style={[styles.iconContainer, { transform: [{ scale: scaleAnim }] }]}>
+          <OtterMascot name={isBlocking ? 'shield' : 'celebrate'} size={sc(136)} containerStyle={styles.confirmMascot} />
           <View
             style={[
               styles.iconCircle,
@@ -126,6 +128,7 @@ const styles = StyleSheet.create({
 
   // Icon
   iconContainer: { marginBottom: sc(32) },
+  confirmMascot: { alignItems: 'center', marginBottom: sc(8) },
   iconCircle: { width: sc(88), height: sc(88), borderRadius: sc(44), alignItems: 'center', justifyContent: 'center' },
 
   // Text

@@ -4,6 +4,7 @@ import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import BottomNav from '../components/BottomNav';
+import OtterMascot from '../components/OtterMascot';
 
 const { width: W } = Dimensions.get('window');
 const sc = (v: number) => Math.round(v * (W / 390));
@@ -36,8 +37,13 @@ export default function SafetyCenterScreen({ navigation, theme }: any) {
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         {/* Hero */}
-        <Text style={[styles.heroTitle, { color: colors.primary }]}>Your Safety Hub</Text>
-        <Text style={[styles.heroDesc, { color: colors.onSurfaceVariant }]}>We're here to ensure every connection remains a safe space. Whether you need immediate help or want to learn about our community standards, you're in the right place.</Text>
+        <View style={styles.heroRow}>
+          <View style={styles.heroCopy}>
+            <Text style={[styles.heroTitle, { color: colors.primary }]}>Your Safety Hub</Text>
+            <Text style={[styles.heroDesc, { color: colors.onSurfaceVariant }]}>We're here to ensure every connection remains a safe space. Whether you need immediate help or want to learn about our community standards, you're in the right place.</Text>
+          </View>
+          <OtterMascot name="shield" size={sc(108)} containerStyle={styles.heroMascot} />
+        </View>
 
         {/* Emergency Grid */}
         <View style={[styles.crisisCard, { backgroundColor: colors.errorContainer + '1A', borderLeftColor: colors.error }]}>
@@ -129,8 +135,11 @@ const styles = StyleSheet.create({
   quickExit: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: sc(10), paddingVertical: 5, borderRadius: sc(26) },
   quickExitText: { fontSize: sc(9), fontWeight: '700', letterSpacing: 0.5 },
   scrollContent: { paddingHorizontal: sc(20), paddingTop: sc(8), paddingBottom: sc(100) },
+  heroRow: { flexDirection: 'row', alignItems: 'center', gap: sc(10), marginBottom: sc(18) },
+  heroCopy: { flex: 1 },
+  heroMascot: { flexShrink: 0, marginRight: -sc(6) },
   heroTitle: { fontSize: sc(28), fontWeight: '800', lineHeight: sc(34), letterSpacing: -0.5, marginBottom: sc(10) },
-  heroDesc: { fontSize: sc(13), lineHeight: sc(20), marginBottom: sc(28) },
+  heroDesc: { fontSize: sc(13), lineHeight: sc(20) },
   crisisCard: { borderRadius: sc(12), padding: sc(20), borderLeftWidth: 4, marginBottom: sc(10) },
   crisisHeader: { flexDirection: 'row', alignItems: 'center', gap: 5, marginBottom: sc(10) },
   crisisLabel: { fontSize: sc(10), fontWeight: '700', letterSpacing: 1.5 },

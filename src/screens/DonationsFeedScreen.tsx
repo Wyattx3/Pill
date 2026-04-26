@@ -16,6 +16,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 import BottomNav from '../components/BottomNav';
+import OtterMascot from '../components/OtterMascot';
 import { getFundraisers, Fundraiser, getFundraiserAccount, isFullyVerified, getNextVerificationStep } from '../utils/donations';
 
 const { width: W } = Dimensions.get('window');
@@ -167,11 +168,12 @@ export default function DonationsFeedScreen({ navigation, theme }: any) {
       {/* Feed */}
       {loading ? (
         <View style={styles.stateContainer}>
+          <OtterMascot name="donate" size={sc(112)} containerStyle={styles.stateMascot} />
           <ActivityIndicator size="large" color={colors.primary} />
         </View>
       ) : fundraisers.length === 0 ? (
         <View style={styles.stateContainer}>
-          <Ionicons name="heart-outline" size={sc(48)} color={colors.outlineVariant} />
+          <OtterMascot name="donate" size={sc(136)} containerStyle={styles.stateMascot} />
           <Text style={[styles.stateTitle, { color: colors.onSurface }]}>No fundraisers yet</Text>
           <Text style={[styles.stateSub, { color: colors.onSurfaceVariant }]}>
             Be the first to start a campaign
@@ -309,6 +311,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: { paddingHorizontal: sc(16), paddingTop: sc(8) },
   stateContainer: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: sc(32) },
+  stateMascot: { marginBottom: sc(12) },
   stateTitle: { fontSize: sc(20), fontWeight: '800', marginTop: sc(16), marginBottom: sc(6) },
   stateSub: { fontSize: sc(14), textAlign: 'center', marginBottom: sc(24) },
   emptyBtn: { borderRadius: sc(16), overflow: 'hidden' },

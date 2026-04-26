@@ -5,6 +5,7 @@ import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { setOnboarded } from '../utils/donations';
+import OtterMascot from '../components/OtterMascot';
 
 const { width: W } = Dimensions.get('window');
 const sc = (v: number) => Math.round(v * (W / 390));
@@ -12,6 +13,7 @@ const sc = (v: number) => Math.round(v * (W / 390));
 const pages = [
   {
     icon: 'heart-circle' as const,
+    mascot: 'donate' as const,
     title: 'Support Causes',
     titleAccent: 'That Matter',
     subtitle: 'Discover and support fundraisers that resonate with your values. Every contribution makes a difference.',
@@ -22,6 +24,7 @@ const pages = [
   },
   {
     icon: 'gift' as const,
+    mascot: 'celebrate' as const,
     title: 'Earn Rewards',
     titleAccent: 'As You Give',
     subtitle: 'Unlock gift tiers and earn shareable certificates for your contributions. Giving feels even better with recognition.',
@@ -32,6 +35,7 @@ const pages = [
   },
   {
     icon: 'people' as const,
+    mascot: 'note' as const,
     title: 'Start Your Own',
     titleAccent: 'Fundraiser',
     subtitle: 'Create campaigns for causes you care about. Get verified and reach a community ready to support.',
@@ -103,7 +107,8 @@ export default function DonationsOnboardingScreen({ navigation, theme }: any) {
           <View key={index} style={styles.page}>
             {/* Icon Card */}
             <View style={[styles.iconCard, { backgroundColor: colors.surfaceContainerLow }]}>
-              <Ionicons name={p.icon} size={sc(64)} color={colors.primary} />
+              <View style={[styles.iconCardGlow, { backgroundColor: colors.tertiaryContainer + '33' }]} pointerEvents="none" />
+              <OtterMascot name={p.mascot} size={sc(202)} />
               <View style={styles.cardGlass}>
                 <View style={styles.iconRow}>
                   <View style={[styles.iconCircle, { backgroundColor: colors.primaryContainer + '1A' }]}>
@@ -177,7 +182,8 @@ const styles = StyleSheet.create({
   scrollView: { flex: 1 },
   scrollContent: {},
   page: { justifyContent: 'center', width: W, paddingHorizontal: sc(24) },
-  iconCard: { width: '100%', aspectRatio: 4 / 3, borderRadius: sc(24), alignItems: 'center', justifyContent: 'center', marginBottom: sc(24) },
+  iconCard: { width: '100%', aspectRatio: 4 / 3, borderRadius: sc(24), alignItems: 'center', justifyContent: 'center', marginBottom: sc(24), overflow: 'hidden' },
+  iconCardGlow: { position: 'absolute', width: sc(190), height: sc(190), borderRadius: sc(95), opacity: 0.45 },
   cardGlass: { position: 'absolute', left: sc(16), right: sc(16), bottom: sc(16), backgroundColor: 'rgba(251,249,245,0.7)', borderRadius: sc(12), padding: sc(14) },
   iconRow: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 8 },
   iconCircle: { padding: 7, borderRadius: 18 },

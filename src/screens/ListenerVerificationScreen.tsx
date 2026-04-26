@@ -11,6 +11,7 @@ import {
 import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import OtterMascot from '../components/OtterMascot';
 
 const { width: W } = Dimensions.get('window');
 const sc = (v: number) => Math.round(v * (W / 390));
@@ -27,6 +28,8 @@ const GUIDELINES = [
   { icon: 'heart-outline', title: 'Emotional Safety First', desc: 'Respond with empathy. Guide crises to professional resources.' },
   { icon: 'shield-checkmark-outline', title: 'Respect Anonymity', desc: 'Never attempt to identify or contact speakers outside the app.' },
 ];
+
+const verificationMascots = ['tea', 'tea', 'note', 'shield', 'note'] as const;
 
 export default function ListenerVerificationScreen({ navigation, theme }: any) {
   const insets = useSafeAreaInsets();
@@ -139,6 +142,7 @@ export default function ListenerVerificationScreen({ navigation, theme }: any) {
       <View style={[styles.container, { paddingTop: insets.top, backgroundColor: colors.background }]}>
         <StatusBar style={isDark ? 'light' : 'dark'} />
         <View style={styles.successWrap}>
+          <OtterMascot name="celebrate" size={sc(132)} containerStyle={styles.successMascot} />
           <View style={[styles.successRing, { borderColor: colors.primary + '33' }]}>
             <Ionicons name="checkmark" size={sc(40)} color={colors.primary} />
           </View>
@@ -182,6 +186,10 @@ export default function ListenerVerificationScreen({ navigation, theme }: any) {
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
       >
+        <View style={styles.stepMascotWrap}>
+          <OtterMascot name={verificationMascots[currentStep]} size={sc(88)} />
+        </View>
+
         {/* ═════ Step 0 : Email ═════ */}
         {currentStep === 0 && (
           <>
@@ -489,6 +497,7 @@ const styles = StyleSheet.create({
 
   /* Scroll */
   scroll: { paddingHorizontal: sc(24), paddingTop: sc(4) },
+  stepMascotWrap: { alignItems: 'center', marginBottom: sc(8) },
 
   /* Typography */
   headline: { fontSize: sc(28), fontWeight: '800', letterSpacing: -0.6, lineHeight: sc(34), marginBottom: sc(12) },
@@ -609,6 +618,7 @@ const styles = StyleSheet.create({
 
   /* Success */
   successWrap: { flex: 1, justifyContent: 'center', alignItems: 'center', paddingHorizontal: sc(32) },
+  successMascot: { marginBottom: sc(8) },
   successRing: {
     width: sc(80),
     height: sc(80),

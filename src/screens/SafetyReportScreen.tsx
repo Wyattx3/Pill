@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Dimensions, TextI
 import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import OtterMascot from '../components/OtterMascot';
 
 const { width: W } = Dimensions.get('window');
 const sc = (v: number) => Math.round(v * (W / 390));
@@ -46,9 +47,7 @@ export default function SafetyReportScreen({ navigation, theme }: any) {
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         {/* Header Card */}
         <View style={[styles.headerCard, { backgroundColor: colors.surfaceContainerLow }]}>
-          <View style={[styles.headerIconWrap, { backgroundColor: colors.errorContainer + '33' }]}>
-            <Ionicons name="shield-outline" size={sc(28)} color={colors.error} />
-          </View>
+          <OtterMascot name="shield" size={sc(118)} containerStyle={styles.headerMascot} />
           <Text style={[styles.headerTitle, { color: colors.onSurface }]}>Help Us Stay Safe</Text>
           <Text style={[styles.headerDesc, { color: colors.onSurfaceVariant }]}>
             Reports are confidential. The reported user will never know who filed this report.
@@ -164,7 +163,7 @@ const styles = StyleSheet.create({
 
   // Header
   headerCard: { borderRadius: sc(16), padding: sc(20), alignItems: 'center', marginBottom: sc(20) },
-  headerIconWrap: { width: sc(52), height: sc(52), borderRadius: sc(26), alignItems: 'center', justifyContent: 'center', marginBottom: sc(10) },
+  headerMascot: { marginBottom: sc(6) },
   headerTitle: { fontSize: sc(18), fontWeight: '800', marginBottom: sc(6) },
   headerDesc: { fontSize: sc(12), lineHeight: sc(18), textAlign: 'center' },
 

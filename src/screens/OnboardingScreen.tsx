@@ -1,16 +1,17 @@
 import React, { useState, useRef } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Image, Dimensions, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Dimensions, ScrollView } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import OtterMascot from '../components/OtterMascot';
 
 const { width: W } = Dimensions.get('window');
 const sc = (v: number) => Math.round(v * (W / 390));
 
 const onboardingData = [
   {
-    image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCV2_otGStrKgy-eP_3ezTKqWUF2m5K4PE3VQ3zNKQr0Urr1y3rukxTu8Cur0kO3D_ZHUS-xcfS_ovN30h1PVeXim7V4EdQfu7vtlkX42Yf92wRb8FkrpPmrMwNOvcJlPcpc6jk4MhehrwEoYiQXA6PvxOeAIsXxnlTp5v2Drzma3O5CYHI_YBGgVsn56UQoTcww5saQg8RW223OIkZluYcxAenPV4xLXTB77vmgXNnJernhEwj04FmulOLytf-w4jDMiA-S22IeA5j',
+    mascot: 'wave' as const,
     title: 'Welcome to',
     titleAccent: 'Pill',
     subtitle: 'A safe, anonymous space to talk and be heard. Connect with trained listeners who care.',
@@ -20,7 +21,7 @@ const onboardingData = [
     buttonLabel: 'Continue',
   },
   {
-    image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDqw8SDkBS76RmRkS0WsdFLfMmtDEBDQ1zicoRVO2YkS9XE0_awWfrmSGmo-qgCakFZyJmb_57lPijGTsT0qSPkYK4IPoTDUSgw1foT0LONuv0uS9FPL-ZGcXfhim1Ft9C459J_7_0I7PiqK0LfYayTjG2PW54zZ5wH2xEaVGDNflQtJPi0En75PopWl-lwNn6SXEANRwCv-s0A3EiIx6sdkS3ZdzH0otqyeH8ucUMP09BOx-cBCUoU23m_WIdYLrTImxd',
+    mascot: 'listener' as const,
     title: 'Be the Voice or',
     titleAccent: 'Be the Listener',
     subtitle: 'Talk when you need support, or listen when someone else needs to be heard. You choose your role.',
@@ -30,7 +31,7 @@ const onboardingData = [
     buttonLabel: 'Next',
   },
   {
-    image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAeyiI1Ay47achzdHsFnu0CV9BP2M9GyBh239kUjpnpcIpaSiOhD4BmECM-J66hO1OoYyzfSCDawDniZb9fPkyyFWlFPFYQnM69hycUIczT04ZNleRdd0MufugURdti8KnFfBUbd6FqzJOhv9pMzZEzk6voR9Ji3B4bBFz4r_IKLwL3mpXy-9uzZ3iJaUZ8fXAkcQBj1n1cT2EKknr7VefK93-DRV4Iar93DjS1jOjEywU2drp5jOToYee0heCOgSPMrYK-azW_IRJQ',
+    mascot: 'secure' as const,
     title: 'Privacy is Our',
     titleAccent: 'Promise',
     subtitle: 'All conversations are anonymous, encrypted, and never recorded. Your safety comes first.',
@@ -97,8 +98,9 @@ export default function OnboardingScreen({ navigation, theme }: any) {
         {onboardingData.map((page, index) => (
           <View key={index} style={styles.page}>
             {/* Image Card */}
-            <View style={styles.cardContainer}>
-              <Image source={{ uri: page.image }} style={styles.cardImage} />
+            <View style={[styles.cardContainer, { backgroundColor: colors.surfaceContainerLow }]}>
+              <View style={[styles.cardGlow, { backgroundColor: colors.primaryContainer + '55' }]} pointerEvents="none" />
+              <OtterMascot name={page.mascot} size={sc(250)} containerStyle={styles.cardMascot} />
               <View style={styles.glassOverlay}>
                 <View style={styles.iconRow}>
                   <View style={[styles.iconCircle, { backgroundColor: colors.primaryContainer + '1A' }]}>
@@ -172,8 +174,9 @@ const styles = StyleSheet.create({
   scrollView: { flex: 1 },
   scrollContent: {},
   page: { justifyContent: 'center', width: W, paddingHorizontal: sc(24) },
-  cardContainer: { width: '100%', aspectRatio: 4 / 5, borderRadius: sc(24), overflow: 'hidden', marginBottom: sc(20) },
-  cardImage: { width: '100%', height: '100%' },
+  cardContainer: { width: '100%', aspectRatio: 4 / 5, borderRadius: sc(24), overflow: 'hidden', marginBottom: sc(20), alignItems: 'center', justifyContent: 'center' },
+  cardGlow: { position: 'absolute', width: sc(220), height: sc(220), borderRadius: sc(110), opacity: 0.28 },
+  cardMascot: { marginBottom: sc(30) },
   glassOverlay: { position: 'absolute', left: sc(16), right: sc(16), bottom: sc(16), backgroundColor: 'rgba(251,249,245,0.5)', borderRadius: sc(12), padding: sc(18) },
   iconRow: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 8 },
   iconCircle: { padding: 7, borderRadius: 18 },

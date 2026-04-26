@@ -4,6 +4,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import OtterMascot from '../components/OtterMascot';
 
 const { width: W } = Dimensions.get('window');
 const sc = (v: number) => Math.round(v * (W / 390));
@@ -79,9 +80,7 @@ export default function DonationScreen({ navigation, theme }: any) {
         <StatusBar style={isDark ? 'light' : 'dark'} />
         <View style={styles.successContent}>
           <Animated.View style={{ transform: [{ scale: heartPulse }] }}>
-            <View style={styles.successIcon}>
-              <Ionicons name="heart" size={sc(64)} color={colors.primary} />
-            </View>
+            <OtterMascot name="celebrate" size={sc(146)} containerStyle={styles.successIcon} />
           </Animated.View>
           <Text style={[styles.successTitle, { color: colors.primary }]}>Thank You</Text>
           <Text style={[styles.successDesc, { color: colors.onSurfaceVariant }]}>Your generosity helps keep this space safe and free for everyone.</Text>
@@ -111,6 +110,7 @@ export default function DonationScreen({ navigation, theme }: any) {
         {/* Rate Your Listener */}
         <AnimatedCard index={0}>
           <View style={[styles.card, { backgroundColor: colors.surfaceContainerLow }]}>
+            <OtterMascot name="tea" size={sc(96)} containerStyle={styles.listenerMascot} />
             <Text style={[styles.cardTitle, { color: colors.onSurface }]}>How was your listener?</Text>
             <View style={styles.starsRow}>
               {[1, 2, 3, 4, 5].map((star) => (
@@ -223,6 +223,7 @@ const styles = StyleSheet.create({
   scrollContent: { paddingHorizontal: sc(18), paddingTop: sc(8), paddingBottom: sc(40) },
 
   card: { borderRadius: sc(16), padding: sc(18), marginBottom: sc(12) },
+  listenerMascot: { alignItems: 'center', marginBottom: sc(4) },
   cardTitle: { fontSize: sc(16), fontWeight: '700', marginBottom: sc(6) },
   cardDesc: { fontSize: sc(12), lineHeight: sc(18), marginBottom: sc(14) },
 

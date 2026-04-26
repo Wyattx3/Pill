@@ -4,6 +4,7 @@ import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import BottomNav from '../components/BottomNav';
+import OtterMascot from '../components/OtterMascot';
 
 const { width: W } = Dimensions.get('window');
 const sc = (v: number) => Math.round(v * (W / 390));
@@ -28,8 +29,11 @@ export default function SettingsScreen({ navigation, theme }: any) {
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         {/* Title */}
         <View style={styles.titleSection}>
-          <Text style={[styles.title, { color: colors.onBackground }]}>Settings</Text>
-          <Text style={[styles.subtitle, { color: colors.onSurfaceVariant }]}>Personalize your safe space</Text>
+          <View style={styles.titleCopy}>
+            <Text style={[styles.title, { color: colors.onBackground }]}>Settings</Text>
+            <Text style={[styles.subtitle, { color: colors.onSurfaceVariant }]}>Personalize your safe space</Text>
+          </View>
+          <OtterMascot name="note" size={sc(92)} containerStyle={styles.settingsMascot} />
         </View>
 
         {/* Appearance & Privacy PIN */}
@@ -89,7 +93,9 @@ const styles = StyleSheet.create({
   brand: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   brandText: { fontSize: sc(17), fontWeight: '800', letterSpacing: -0.5 },
   scrollContent: { paddingTop: sc(8), paddingBottom: sc(100) },
-  titleSection: { paddingHorizontal: sc(20), marginBottom: sc(24) },
+  titleSection: { paddingHorizontal: sc(20), marginBottom: sc(24), flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  titleCopy: { flex: 1 },
+  settingsMascot: { flexShrink: 0, marginRight: -sc(4) },
   title: { fontSize: sc(28), fontWeight: '800', letterSpacing: -0.5, marginBottom: sc(3) },
   subtitle: { fontSize: sc(13), fontWeight: '500' },
   settingsGrid: { flexDirection: 'row', gap: sc(10), marginBottom: sc(24), paddingHorizontal: sc(20) },

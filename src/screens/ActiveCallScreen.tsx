@@ -12,6 +12,7 @@ import {
 import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import OtterMascot from '../components/OtterMascot';
 
 const { width: W, height: H } = Dimensions.get('window');
 const sc = (v: number) => Math.round(v * (W / 390));
@@ -160,8 +161,8 @@ export default function ActiveCallScreen({ navigation, theme }: any) {
               <View style={[styles.pulseRing, { borderColor: colors.primaryFixed + '66' }]} />
             </Animated.View>
             <Animated.View style={{ transform: [{ scale: avatarScale }] }}>
-              <View style={[styles.avatar, { backgroundColor: colors.primary }]}>
-                <Ionicons name="person" size={sc(36)} color={colors.onPrimary} />
+              <View style={[styles.avatar, { backgroundColor: colors.surfaceContainerLowest }]}>
+                <OtterMascot name="calm" size={sc(126)} />
               </View>
             </Animated.View>
           </View>
@@ -305,22 +306,22 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   avatarContainer: {
-    width: sc(120),
-    height: sc(120),
+    width: sc(132),
+    height: sc(132),
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: sc(16),
   },
   pulseRing: {
-    width: sc(140),
-    height: sc(140),
+    width: sc(154),
+    height: sc(154),
     borderRadius: 70,
     borderWidth: 2,
   },
   avatar: {
-    width: sc(96),
-    height: sc(96),
-    borderRadius: 48,
+    width: sc(118),
+    height: sc(118),
+    borderRadius: sc(59),
     alignItems: 'center',
     justifyContent: 'center',
     zIndex: 2,

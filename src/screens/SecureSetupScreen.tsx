@@ -4,6 +4,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import OtterMascot from '../components/OtterMascot';
 
 const { width: W } = Dimensions.get('window');
 const sc = (v: number) => Math.round(v * (W / 390));
@@ -43,34 +44,7 @@ export default function SecureSetupScreen({ navigation, theme }: any) {
           </Text>
         </View>
 
-        {/* Feature Cards */}
-        <View style={styles.bentoGrid}>
-          <View style={[styles.bentoCard, { backgroundColor: colors.surfaceContainerLow }]}>
-            <View style={[styles.bentoIconCircle, { backgroundColor: colors.primaryContainer }]}>
-              <Ionicons name="phone-portrait" size={sc(22)} color={colors.onPrimaryContainer} />
-            </View>
-            <Text style={[styles.bentoTitle, { color: colors.onSurface }]}>Device-Linked</Text>
-            <Text style={[styles.bentoDesc, { color: colors.onSurfaceVariant }]}>Your data never leaves this phone. No cloud storage, no leaked databases.</Text>
-          </View>
-          <View style={[styles.bentoCardAlt, { backgroundColor: colors.surfaceContainer }]}>
-            <View style={[styles.bentoIconCircleAlt, { backgroundColor: colors.secondaryContainer }]}>
-              <Ionicons name="eye-off" size={sc(22)} color={colors.onSecondaryContainer} />
-            </View>
-            <Text style={[styles.bentoTitle, { color: colors.onSurface }]}>Anonymous</Text>
-            <Text style={[styles.bentoDesc, { color: colors.onSurfaceVariant }]}>We don't know who you are, and that's how it should be. Total privacy by design.</Text>
-          </View>
-        </View>
-
-        {/* Passcode CTA */}
-        <View style={[styles.ctaCard, { backgroundColor: colors.surfaceContainerLowest }]}>
-          <View style={[styles.ctaIconCircle, { backgroundColor: colors.primaryContainer }]}>
-            <Ionicons name="lock-closed" size={sc(28)} color={colors.onPrimaryContainer} />
-          </View>
-          <Text style={[styles.ctaTitle, { color: colors.onSurface }]}>Secure Your Space</Text>
-          <Text style={[styles.ctaDesc, { color: colors.onSurfaceVariant }]}>
-            Set a 4-digit passcode to protect your private sanctuary. This is the only way back in.
-          </Text>
-        </View>
+        <OtterMascot name="privacyGuard" size={sc(260)} containerStyle={styles.privacyMascot} />
 
         {/* Primary Action */}
         <TouchableOpacity
@@ -106,17 +80,7 @@ const styles = StyleSheet.create({
   title: { fontSize: sc(30), fontWeight: '800', lineHeight: sc(36), letterSpacing: -0.5, marginBottom: sc(10) },
   titleAccent: { fontStyle: 'italic' },
   subtitle: { fontSize: sc(13), lineHeight: sc(20) },
-  bentoGrid: { flexDirection: 'row', gap: sc(10), marginBottom: sc(24) },
-  bentoCard: { flex: 1, borderRadius: sc(16), padding: sc(16) },
-  bentoCardAlt: { flex: 1, borderRadius: sc(16), padding: sc(16) },
-  bentoIconCircle: { width: sc(40), height: sc(40), borderRadius: sc(20), alignItems: 'center', justifyContent: 'center', marginBottom: sc(10) },
-  bentoIconCircleAlt: { width: sc(40), height: sc(40), borderRadius: sc(20), alignItems: 'center', justifyContent: 'center', marginBottom: sc(10) },
-  bentoTitle: { fontSize: sc(14), fontWeight: '700', marginBottom: sc(4) },
-  bentoDesc: { fontSize: sc(11), lineHeight: sc(16) },
-  ctaCard: { borderRadius: sc(16), padding: sc(24), marginBottom: sc(24), alignItems: 'center' },
-  ctaIconCircle: { width: sc(56), height: sc(56), borderRadius: sc(28), alignItems: 'center', justifyContent: 'center', marginBottom: sc(12) },
-  ctaTitle: { fontSize: sc(18), fontWeight: '700', marginBottom: sc(4) },
-  ctaDesc: { fontSize: sc(12), lineHeight: sc(18), textAlign: 'center', maxWidth: '90%' },
+  privacyMascot: { alignSelf: 'center', marginTop: sc(4), marginBottom: sc(22) },
   primaryBtn: { borderRadius: sc(26), overflow: 'hidden', marginBottom: sc(16) },
   gradient: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: sc(8), paddingVertical: sc(16) },
   primaryBtnText: { fontSize: sc(15), fontWeight: '700' },

@@ -4,6 +4,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import OtterMascot from '../components/OtterMascot';
 
 const { width: W } = Dimensions.get('window');
 const sc = (v: number) => Math.round(v * (W / 390));
@@ -65,6 +66,7 @@ export default function AvatarSelectorScreen({ navigation, theme }: any) {
 
         {/* ====== Large Preview Card ====== */}
         <View style={[styles.previewCard, { backgroundColor: colors.surfaceContainerLow, borderColor: colors.outlineVariant + '22' }]}>
+          <OtterMascot name="wave" size={sc(92)} containerStyle={styles.previewMascot} />
           <View style={[
             styles.previewAvatar,
             selected
@@ -229,6 +231,7 @@ const styles = StyleSheet.create({
   scrollContent: { paddingHorizontal: sc(20), paddingTop: sc(4) },
 
   previewCard: { alignItems: 'center', borderRadius: sc(24), paddingVertical: sc(28), paddingHorizontal: sc(20), marginBottom: sc(24), borderWidth: 1, overflow: 'hidden' },
+  previewMascot: { marginBottom: sc(8) },
   previewAvatar: { width: sc(96), height: sc(96), borderRadius: sc(48), alignItems: 'center', justifyContent: 'center', marginBottom: sc(16), borderWidth: 3 },
   previewEmoji: { fontSize: sc(44) },
   previewName: { fontSize: sc(22), fontWeight: '800', letterSpacing: -0.5, marginBottom: sc(4) },

@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Dimensions } from
 import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import OtterMascot from '../components/OtterMascot';
 
 const { width: W } = Dimensions.get('window');
 const sc = (v: number) => Math.round(v * (W / 390));
@@ -31,6 +32,7 @@ export default function ProfileScreen({ navigation, theme }: any) {
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         {/* Avatar & Name */}
         <View style={[styles.profileCard, { backgroundColor: colors.surfaceContainerLow }]}>
+          <OtterMascot name="note" size={sc(86)} containerStyle={styles.profileMascot} />
           <View style={[styles.avatarLarge, { backgroundColor: colors.primaryContainer + '33' }]}>
             <Text style={{ fontSize: sc(40) }}>{accountAvatar}</Text>
           </View>
@@ -98,6 +100,7 @@ const styles = StyleSheet.create({
   scrollContent: { paddingHorizontal: sc(18), paddingTop: sc(8), paddingBottom: sc(20) },
 
   profileCard: { borderRadius: sc(16), padding: sc(24), alignItems: 'center', marginBottom: sc(14) },
+  profileMascot: { marginBottom: sc(6) },
   avatarLarge: { width: sc(72), height: sc(72), borderRadius: sc(36), alignItems: 'center', justifyContent: 'center', marginBottom: sc(12) },
   profileName: { fontSize: sc(22), fontWeight: '800' },
   profileDate: { fontSize: sc(11), marginTop: sc(4) },

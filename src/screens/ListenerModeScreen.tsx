@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Dimensions } from
 import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import OtterMascot from '../components/OtterMascot';
 
 const { width: W } = Dimensions.get('window');
 const sc = (v: number) => Math.round(v * (W / 390));
@@ -35,8 +36,7 @@ export default function ListenerModeScreen({ navigation, theme }: any) {
             <View style={[styles.pulseCircle, styles.pulseOuter, { backgroundColor: colors.primaryContainer + '4D' }]} />
             <View style={[styles.pulseCircleMid, { borderColor: colors.primary + '0D' }]} />
             <View style={[styles.pulseCircleInner, { borderColor: colors.primaryContainer, backgroundColor: colors.surfaceContainerLowest }]}>
-              <Ionicons name="ear-outline" size={sc(32)} color={colors.primary} />
-              <Text style={[styles.activeText, { color: colors.primary }]}>Active</Text>
+              <OtterMascot name="tea" size={sc(128)} />
             </View>
           </View>
           <Text style={[styles.statusTitle, { color: colors.onSurface }]}>You are available to listen.</Text>
@@ -120,7 +120,6 @@ const styles = StyleSheet.create({
   pulseOuter: { width: '100%', height: '100%', opacity: 0.3, position: 'absolute' },
   pulseCircleMid: { width: '75%', height: '75%', borderRadius: 9999, borderWidth: 1, opacity: 0.3, position: 'absolute' },
   pulseCircleInner: { width: sc(130), height: sc(130), borderRadius: sc(65), borderWidth: sc(4), alignItems: 'center', justifyContent: 'center' },
-  activeText: { fontSize: sc(11), fontWeight: '700', marginTop: sc(2) },
   statusTitle: { fontSize: sc(22), fontWeight: '800', textAlign: 'center', letterSpacing: -0.3, marginBottom: sc(6) },
   statusDesc: { fontSize: sc(13), lineHeight: sc(20), textAlign: 'center', paddingHorizontal: sc(16) },
   statsGrid: { gap: sc(10), marginBottom: sc(24), paddingHorizontal: sc(18) },

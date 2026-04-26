@@ -16,6 +16,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as ImagePicker from 'expo-image-picker';
 import BottomNav from '../components/BottomNav';
+import OtterMascot from '../components/OtterMascot';
 import { createFundraiser, addMyFundraiser, FundraiserMedia, GiftTier } from '../utils/donations';
 
 const { width: W } = Dimensions.get('window');
@@ -140,7 +141,7 @@ export default function CreateFundraiserScreen({ navigation, route, theme }: any
         <Text style={[styles.sectionLabel, { color: colors.onSurface }]}>Photos & Videos</Text>
         {media.length === 0 ? (
           <View style={[styles.mediaEmpty, { backgroundColor: colors.surfaceContainerLow }]}>
-            <Ionicons name="image-outline" size={sc(48)} color={colors.outlineVariant} />
+            <OtterMascot name="note" size={sc(116)} containerStyle={styles.mediaMascot} />
             <Text style={[styles.mediaEmptyText, { color: colors.onSurfaceVariant }]}>
               Add photos or videos to your fundraiser
             </Text>
@@ -315,6 +316,7 @@ const styles = StyleSheet.create({
   mediaEmpty: {
     borderRadius: sc(16), padding: sc(20), alignItems: 'center', marginBottom: sc(16),
   },
+  mediaMascot: { marginBottom: sc(4) },
   mediaEmptyText: { fontSize: sc(13), textAlign: 'center', marginVertical: sc(8) },
   mediaBtnRow: { flexDirection: 'row', gap: sc(8), marginTop: sc(8) },
   mediaPickBtn: {

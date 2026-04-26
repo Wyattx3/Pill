@@ -32,6 +32,7 @@ import AvailabilityScheduleScreen from './src/screens/AvailabilityScheduleScreen
 import DonationScreen from './src/screens/DonationScreen';
 import ResourceDetailScreen from './src/screens/ResourceDetailScreen';
 import AccountStatusScreen from './src/screens/AccountStatusScreen';
+import YourStatusScreen from './src/screens/YourStatusScreen';
 import EditProfileScreen from './src/screens/EditProfileScreen';
 import PrivacySecurityScreen from './src/screens/PrivacySecurityScreen';
 import UpdatePINScreen from './src/screens/UpdatePINScreen';
@@ -179,6 +180,9 @@ function ThemedApp() {
           </Stack.Screen>
           <Stack.Screen name="AccountStatus">
             {(props) => <ThemedScreen {...props} Component={AccountStatusScreen} />}
+          </Stack.Screen>
+          <Stack.Screen name="YourStatus">
+            {(props) => <ThemedScreen {...props} Component={YourStatusScreen} />}
           </Stack.Screen>
           <Stack.Screen name="EditProfile">
             {(props) => <ThemedScreen {...props} Component={EditProfileScreen} />}

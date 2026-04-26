@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, Dimensions } from 'react-nati
 import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import OtterMascot from '../components/OtterMascot';
 
 const { width: W } = Dimensions.get('window');
 const sc = (v: number) => Math.round(v * (W / 390));
@@ -39,8 +40,8 @@ export default function TalkModeScreen({ navigation, theme }: any) {
         <View style={styles.pulseContainer}>
           <View style={[styles.pulseCircle, styles.pulseOuter, { backgroundColor: colors.primaryContainer + '4D' }]} />
           <View style={[styles.pulseCircle, styles.pulseMid, { borderColor: colors.primary + '1A' }]} />
-          <View style={[styles.blob, { backgroundColor: colors.primary }]}>
-            <Ionicons name="chatbubble-ellipses" size={sc(40)} color={colors.onPrimary} />
+          <View style={[styles.blob, { backgroundColor: colors.surfaceContainerLowest }]}>
+            <OtterMascot name="listener" size={sc(138)} />
           </View>
         </View>
 
@@ -102,7 +103,7 @@ const styles = StyleSheet.create({
   pulseCircle: { position: 'absolute', borderRadius: 9999 },
   pulseOuter: { width: '100%', height: '100%', opacity: 0.3 },
   pulseMid: { width: '75%', height: '75%', borderWidth: 1, opacity: 0.4 },
-  blob: { width: sc(96), height: sc(96), borderRadius: sc(48), alignItems: 'center', justifyContent: 'center', zIndex: 10 },
+  blob: { width: sc(136), height: sc(136), borderRadius: sc(68), alignItems: 'center', justifyContent: 'center', zIndex: 10 },
   title: { fontSize: sc(22), fontWeight: '700', textAlign: 'center', marginBottom: sc(10), letterSpacing: -0.3, lineHeight: sc(28) },
   subtitle: { fontSize: sc(13), lineHeight: sc(20), textAlign: 'center', maxWidth: '85%', marginBottom: sc(20) },
   privacyCard: { flexDirection: 'row', alignItems: 'flex-start', borderRadius: sc(14), padding: sc(18), gap: sc(12), width: '100%', maxWidth: sc(340), marginBottom: sc(20) },
