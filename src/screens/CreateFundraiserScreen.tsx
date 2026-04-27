@@ -141,7 +141,7 @@ export default function CreateFundraiserScreen({ navigation, route, theme }: any
         <Text style={[styles.sectionLabel, { color: colors.onSurface }]}>Photos & Videos</Text>
         {media.length === 0 ? (
           <View style={[styles.mediaEmpty, { backgroundColor: colors.surfaceContainerLow }]}>
-            <OtterMascot name="note" size={sc(116)} containerStyle={styles.mediaMascot} />
+            <OtterMascot name="fundraiserCreate" size={sc(116)} containerStyle={styles.mediaMascot} />
             <Text style={[styles.mediaEmptyText, { color: colors.onSurfaceVariant }]}>
               Add photos or videos to your fundraiser
             </Text>

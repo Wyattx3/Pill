@@ -4,6 +4,7 @@ import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import OtterMascot from '../components/OtterMascot';
+import BrandLogo from '../components/BrandLogo';
 
 const { width: W } = Dimensions.get('window');
 const sc = (v: number) => Math.round(v * (W / 390));
@@ -11,7 +12,31 @@ const sc = (v: number) => Math.round(v * (W / 390));
 export default function ListenerModeScreen({ navigation, theme }: any) {
   const insets = useSafeAreaInsets();
   const { colors, isDark } = theme;
-  const [isAvailable, setIsAvailable] = React.useState(true);
+  const [isAvailable, setIsAvailable] = React.useState(false);
+  const mockCallTimer = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  React.useEffect(() => {
+    return () => {
+      if (mockCallTimer.current) {
+        clearTimeout(mockCallTimer.current);
+      }
+    };
+  }, []);
+
+  const handleAvailabilityPress = () => {
+    const nextAvailable = !isAvailable;
+    setIsAvailable(nextAvailable);
+
+    if (mockCallTimer.current) {
+      clearTimeout(mockCallTimer.current);
+    }
+
+    if (nextAvailable) {
+      mockCallTimer.current = setTimeout(() => {
+        navigation.navigate('IncomingCall', { source: 'listenerMode' });
+      }, 900);
+    }
+  };
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.background }}>
@@ -23,8 +48,7 @@ export default function ListenerModeScreen({ navigation, theme }: any) {
       {/* Top Bar */}
       <View style={[styles.topBar, { paddingTop: insets.top }]}>
         <View style={styles.brand}>
-          <Ionicons name="shield-checkmark" size={sc(22)} color={colors.primary} />
-          <Text style={[styles.brandText, { color: colors.primary }]}>Pill</Text>
+          <BrandLogo width={sc(86)} height={sc(38)} />
         </View>
       </View>
 
@@ -36,11 +60,13 @@ export default function ListenerModeScreen({ navigation, theme }: any) {
             <View style={[styles.pulseCircle, styles.pulseOuter, { backgroundColor: colors.primaryContainer + '4D' }]} />
             <View style={[styles.pulseCircleMid, { borderColor: colors.primary + '0D' }]} />
             <View style={[styles.pulseCircleInner, { borderColor: colors.primaryContainer, backgroundColor: colors.surfaceContainerLowest }]}>
-              <OtterMascot name="tea" size={sc(128)} />
+              <OtterMascot name="homeAvailable" size={sc(128)} />
             </View>
           </View>
-          <Text style={[styles.statusTitle, { color: colors.onSurface }]}>You are available to listen.</Text>
-          <Text style={[styles.statusDesc, { color: colors.onSurfaceVariant }]}>We will notify you of incoming calls. Your presence is a gift to those seeking peace.</Text>
+          <Text style={[styles.statusTitle, { color: colors.onSurface }]}>{isAvailable ? 'You are available to listen.' : 'You are paused for now.'}</Text>
+          <Text style={[styles.statusDesc, { color: colors.onSurfaceVariant }]}>
+            {isAvailable ? 'A mock talker call will come through shortly.' : 'Turn availability on when you are ready to receive a mock talker call.'}
+          </Text>
         </View>
 
         {/* Stats Bento */}
@@ -68,7 +94,7 @@ export default function ListenerModeScreen({ navigation, theme }: any) {
         </View>
 
         {/* Availability Toggle */}
-        <TouchableOpacity style={[styles.availabilityRow, { backgroundColor: colors.surfaceContainerHigh }]} onPress={() => setIsAvailable(!isAvailable)} activeOpacity={0.7}>
+        <TouchableOpacity style={[styles.availabilityRow, { backgroundColor: colors.surfaceContainerHigh }]} onPress={handleAvailabilityPress} activeOpacity={0.7}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: sc(12) }}>
             <View style={[styles.availIconCircle, { backgroundColor: colors.surfaceContainerLowest }]}>
               <Ionicons name="power" size={sc(22)} color={colors.primary} />
@@ -78,7 +104,7 @@ export default function ListenerModeScreen({ navigation, theme }: any) {
               <Text style={[styles.availDesc, { color: colors.onSurfaceVariant }]}>Ready to support</Text>
             </View>
           </View>
-          <View style={[styles.toggle, isAvailable ? { backgroundColor: colors.primary } : { backgroundColor: colors.outlineVariant }]}>
+          <View style={[styles.toggle, isAvailable ? { backgroundColor: colors.primary, alignItems: 'flex-end' } : { backgroundColor: colors.outlineVariant, alignItems: 'flex-start' }]}>
             <View style={styles.toggleThumb} />
           </View>
         </TouchableOpacity>

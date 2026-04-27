@@ -4,6 +4,7 @@ import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import OtterMascot from '../components/OtterMascot';
+import BrandLogo from '../components/BrandLogo';
 
 const { width: W } = Dimensions.get('window');
 const sc = (v: number) => Math.round(v * (W / 390));
@@ -30,8 +31,7 @@ export default function TalkModeScreen({ navigation, theme }: any) {
       {/* Top Bar */}
       <View style={[styles.topBar, { paddingTop: insets.top }]}>
         <View style={styles.brand}>
-          <Ionicons name="shield-checkmark" size={sc(22)} color={colors.primary} />
-          <Text style={[styles.brandText, { color: colors.primary }]}>Pill</Text>
+          <BrandLogo width={sc(86)} height={sc(38)} />
         </View>
       </View>
 

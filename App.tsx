@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, ActivityIndicator, Text as RNText } from 'react-native';
+import { View, StyleSheet, ActivityIndicator } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import * as Font from 'expo-font';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { ThemeProvider, useTheme } from './src/theme/ThemeProvider';
-import { Colors } from './src/theme';
+import ScreenMascotOverlay from './src/components/ScreenMascotOverlay';
+import BrandLogo from './src/components/BrandLogo';
 
 // Screens
 import OnboardingScreen from './src/screens/OnboardingScreen';
@@ -20,6 +21,8 @@ import AvatarSelectorScreen from './src/screens/AvatarSelectorScreen';
 import ListenerDashboardScreen from './src/screens/ListenerDashboardScreen';
 import ActiveCallScreen from './src/screens/ActiveCallScreen';
 import IncomingCallScreen from './src/screens/IncomingCallScreen';
+import ListenerCallScreen from './src/screens/ListenerCallScreen';
+import ListenerCallReviewScreen from './src/screens/ListenerCallReviewScreen';
 import SafetyReportScreen from './src/screens/SafetyReportScreen';
 import ReportConfirmationScreen from './src/screens/ReportConfirmationScreen';
 
@@ -70,18 +73,26 @@ import PayoutScheduleEditScreen from './src/screens/PayoutScheduleEditScreen';
 
 const Stack = createNativeStackNavigator();
 
-function ThemedScreen({ Component, ...props }: { Component: React.ComponentType<any> }) {
+function ThemedScreen({ Component, ...props }: { Component: React.ComponentType<any>; route?: { name?: string }; [key: string]: any }) {
   const theme = useTheme();
-  return <Component {...props} theme={theme} />;
+  return (
+    <View style={styles.screenHost}>
+      <Component {...props} theme={theme} />
+      <ScreenMascotOverlay screenName={props.route?.name} />
+    </View>
+  );
 }
 
 function LoadingScreen() {
+  const theme = useTheme();
+  const { colors, isDark } = theme;
+
   return (
-    <View style={styles.loadingContainer}>
-      <StatusBar style="dark" />
+    <View style={[styles.loadingContainer, { backgroundColor: colors.surface }]}>
+      <StatusBar style={isDark ? 'light' : 'dark'} />
       <View style={styles.loadingInner}>
-        <ActivityIndicator size="large" color={Colors.primary} />
-        <RNText style={[styles.loadingText, { color: Colors.primary }]}>Pill</RNText>
+        <ActivityIndicator size="large" color={colors.primary} />
+        <BrandLogo width={96} height={44} />
       </View>
     </View>
   );
@@ -141,6 +152,12 @@ function ThemedApp() {
           </Stack.Screen>
           <Stack.Screen name="IncomingCall">
             {(props) => <ThemedScreen {...props} Component={IncomingCallScreen} />}
+          </Stack.Screen>
+          <Stack.Screen name="ListenerCall">
+            {(props) => <ThemedScreen {...props} Component={ListenerCallScreen} />}
+          </Stack.Screen>
+          <Stack.Screen name="ListenerCallReview">
+            {(props) => <ThemedScreen {...props} Component={ListenerCallReviewScreen} />}
           </Stack.Screen>
           <Stack.Screen name="SafetyReport">
             {(props) => <ThemedScreen {...props} Component={SafetyReportScreen} />}
@@ -303,31 +320,24 @@ export default function App() {
     loadFonts();
   }, []);
 
-  if (!fontsLoaded) {
-    return <LoadingScreen />;
-  }
-
   return (
     <ThemeProvider>
-      <ThemedApp />
+      {fontsLoaded ? <ThemedApp /> : <LoadingScreen />}
     </ThemeProvider>
   );
 }
 
 const styles = StyleSheet.create({
+  screenHost: {
+    flex: 1,
+  },
   loadingContainer: {
     flex: 1,
-    backgroundColor: Colors.surface,
     alignItems: 'center',
     justifyContent: 'center',
   },
   loadingInner: {
     alignItems: 'center',
     gap: 16,
-  },
-  loadingText: {
-    fontSize: 20,
-    fontWeight: '800',
-    letterSpacing: -0.5,
   },
 });

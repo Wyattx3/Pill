@@ -29,7 +29,7 @@ const GUIDELINES = [
   { icon: 'shield-checkmark-outline', title: 'Respect Anonymity', desc: 'Never attempt to identify or contact speakers outside the app.' },
 ];
 
-const verificationMascots = ['tea', 'tea', 'note', 'shield', 'note'] as const;
+const verificationMascots = ['verificationDocs', 'verificationDocs', 'verificationDocs', 'safetyReport', 'verificationDocs'] as const;
 
 export default function ListenerVerificationScreen({ navigation, theme }: any) {
   const insets = useSafeAreaInsets();
@@ -142,7 +142,7 @@ export default function ListenerVerificationScreen({ navigation, theme }: any) {
       <View style={[styles.container, { paddingTop: insets.top, backgroundColor: colors.background }]}>
         <StatusBar style={isDark ? 'light' : 'dark'} />
         <View style={styles.successWrap}>
-          <OtterMascot name="celebrate" size={sc(132)} containerStyle={styles.successMascot} />
+          <OtterMascot name="verificationDocs" size={sc(132)} containerStyle={styles.successMascot} />
           <View style={[styles.successRing, { borderColor: colors.primary + '33' }]}>
             <Ionicons name="checkmark" size={sc(40)} color={colors.primary} />
           </View>

@@ -47,7 +47,7 @@ export default function SafetyReportScreen({ navigation, theme }: any) {
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         {/* Header Card */}
         <View style={[styles.headerCard, { backgroundColor: colors.surfaceContainerLow }]}>
-          <OtterMascot name="shield" size={sc(118)} containerStyle={styles.headerMascot} />
+          <OtterMascot name="safetyReport" size={sc(118)} containerStyle={styles.headerMascot} />
           <Text style={[styles.headerTitle, { color: colors.onSurface }]}>Help Us Stay Safe</Text>
           <Text style={[styles.headerDesc, { color: colors.onSurfaceVariant }]}>
             Reports are confidential. The reported user will never know who filed this report.

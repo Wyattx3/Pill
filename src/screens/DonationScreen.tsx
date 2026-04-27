@@ -80,7 +80,7 @@ export default function DonationScreen({ navigation, theme }: any) {
         <StatusBar style={isDark ? 'light' : 'dark'} />
         <View style={styles.successContent}>
           <Animated.View style={{ transform: [{ scale: heartPulse }] }}>
-            <OtterMascot name="celebrate" size={sc(146)} containerStyle={styles.successIcon} />
+            <OtterMascot name="donationThanks" size={sc(146)} containerStyle={styles.successIcon} />
           </Animated.View>
           <Text style={[styles.successTitle, { color: colors.primary }]}>Thank You</Text>
           <Text style={[styles.successDesc, { color: colors.onSurfaceVariant }]}>Your generosity helps keep this space safe and free for everyone.</Text>
@@ -110,7 +110,7 @@ export default function DonationScreen({ navigation, theme }: any) {
         {/* Rate Your Listener */}
         <AnimatedCard index={0}>
           <View style={[styles.card, { backgroundColor: colors.surfaceContainerLow }]}>
-            <OtterMascot name="tea" size={sc(96)} containerStyle={styles.listenerMascot} />
+            <OtterMascot name="homeStatus" size={sc(96)} containerStyle={styles.listenerMascot} />
             <Text style={[styles.cardTitle, { color: colors.onSurface }]}>How was your listener?</Text>
             <View style={styles.starsRow}>
               {[1, 2, 3, 4, 5].map((star) => (

@@ -45,7 +45,7 @@ export default function ReportConfirmationScreen({ route, navigation, theme }: a
       <View style={styles.content}>
         {/* Animated Success Icon */}
         <Animated.View style={[styles.iconContainer, { transform: [{ scale: scaleAnim }] }]}>
-          <OtterMascot name={isBlocking ? 'shield' : 'celebrate'} size={sc(136)} containerStyle={styles.confirmMascot} />
+          <OtterMascot name={isBlocking ? 'safetyReport' : 'safetyHub'} size={sc(136)} containerStyle={styles.confirmMascot} />
           <View
             style={[
               styles.iconCircle,

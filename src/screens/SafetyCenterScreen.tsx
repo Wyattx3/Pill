@@ -5,6 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import BottomNav from '../components/BottomNav';
 import OtterMascot from '../components/OtterMascot';
+import BrandLogo from '../components/BrandLogo';
 
 const { width: W } = Dimensions.get('window');
 const sc = (v: number) => Math.round(v * (W / 390));
@@ -26,8 +27,7 @@ export default function SafetyCenterScreen({ navigation, theme }: any) {
       {/* Top Bar */}
       <View style={[styles.topBar, { paddingTop: insets.top }]}>
         <View style={styles.brand}>
-          <Ionicons name="shield-checkmark" size={sc(22)} color={colors.primary} />
-          <Text style={[styles.brandText, { color: colors.primary }]}>Pill</Text>
+          <BrandLogo width={sc(86)} height={sc(38)} />
         </View>
         <TouchableOpacity style={[styles.quickExit, { backgroundColor: colors.errorContainer }]} onPress={() => navigation.navigate('Home')} activeOpacity={0.8}>
           <Ionicons name="close" size={sc(10)} color={colors.onErrorContainer} />
@@ -42,25 +42,35 @@ export default function SafetyCenterScreen({ navigation, theme }: any) {
             <Text style={[styles.heroTitle, { color: colors.primary }]}>Your Safety Hub</Text>
             <Text style={[styles.heroDesc, { color: colors.onSurfaceVariant }]}>We're here to ensure every connection remains a safe space. Whether you need immediate help or want to learn about our community standards, you're in the right place.</Text>
           </View>
-          <OtterMascot name="shield" size={sc(108)} containerStyle={styles.heroMascot} />
+          <OtterMascot name="safetyHub" size={sc(108)} containerStyle={styles.heroMascot} />
         </View>
 
-        {/* Emergency Grid */}
-        <View style={[styles.crisisCard, { backgroundColor: colors.errorContainer + '1A', borderLeftColor: colors.error }]}>
-          <View style={styles.crisisHeader}>
-            <Ionicons name="home" size={sc(16)} color={colors.error} />
-            <Text style={[styles.crisisLabel, { color: colors.error }]}>CRISIS ASSISTANCE</Text>
+        <View style={[styles.crisisCard, { backgroundColor: colors.errorContainer + (isDark ? '24' : '35'), borderColor: colors.error + '24' }]}>
+          <View pointerEvents="none" style={[styles.crisisGlow, { backgroundColor: colors.error + '12' }]} />
+          <View style={styles.crisisTopRow}>
+            <View style={styles.crisisContent}>
+              <View style={[styles.crisisBadge, { backgroundColor: colors.error + '12', borderColor: colors.error + '26' }]}>
+                <Ionicons name="radio" size={sc(14)} color={colors.error} />
+                <Text style={[styles.crisisLabel, { color: colors.error }]}>CRISIS ASSISTANCE</Text>
+              </View>
+              <Text style={[styles.crisisTitle, { color: colors.onErrorContainer }]}>In Immediate Danger?</Text>
+              <Text style={[styles.crisisDesc, { color: colors.onErrorContainer + 'CC' }]}>If you or someone else is in immediate danger, please contact local emergency services.</Text>
+            </View>
+            <OtterMascot
+              name="crisisAssistant"
+              width={sc(118)}
+              height={sc(128)}
+              containerStyle={styles.crisisMascotWrap}
+            />
           </View>
-          <Text style={[styles.crisisTitle, { color: colors.onErrorContainer }]}>In Immediate Danger?</Text>
-          <Text style={[styles.crisisDesc, { color: colors.onErrorContainer + 'CC' }]}>If you or someone else is in immediate danger, please contact local emergency services.</Text>
           <View style={styles.crisisActions}>
             <TouchableOpacity style={[styles.crisisCall, { backgroundColor: colors.error }]} onPress={() => Linking.openURL('tel:988')} activeOpacity={0.8}>
               <Ionicons name="call" size={sc(14)} color="#fff" />
               <Text style={styles.crisisCallText}>Call 988</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={[styles.crisisTextBtn, { backgroundColor: colors.surface }]} onPress={() => Linking.openURL('sms:988')} activeOpacity={0.8}>
-              <Ionicons name="chatbubble" size={sc(14)} color={colors.onErrorContainer} />
-              <Text style={[styles.crisisTextBtnLabel, { color: colors.onErrorContainer }]}>Text Crisis Line</Text>
+            <TouchableOpacity style={[styles.crisisTextBtn, { backgroundColor: colors.surface + (isDark ? 'D9' : 'F2'), borderColor: colors.error + '24' }]} onPress={() => Linking.openURL('sms:988')} activeOpacity={0.8}>
+              <Ionicons name="chatbubble" size={sc(14)} color={colors.error} />
+              <Text style={[styles.crisisTextBtnLabel, { color: colors.onErrorContainer }]}>Text 988</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -140,15 +150,19 @@ const styles = StyleSheet.create({
   heroMascot: { flexShrink: 0, marginRight: -sc(6) },
   heroTitle: { fontSize: sc(28), fontWeight: '800', lineHeight: sc(34), letterSpacing: -0.5, marginBottom: sc(10) },
   heroDesc: { fontSize: sc(13), lineHeight: sc(20) },
-  crisisCard: { borderRadius: sc(12), padding: sc(20), borderLeftWidth: 4, marginBottom: sc(10) },
-  crisisHeader: { flexDirection: 'row', alignItems: 'center', gap: 5, marginBottom: sc(10) },
-  crisisLabel: { fontSize: sc(10), fontWeight: '700', letterSpacing: 1.5 },
-  crisisTitle: { fontSize: sc(18), fontWeight: '700', marginBottom: sc(6) },
-  crisisDesc: { fontSize: sc(11), lineHeight: sc(16), marginBottom: sc(14) },
-  crisisActions: { flexDirection: 'row', flexWrap: 'wrap', gap: sc(8) },
-  crisisCall: { flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: sc(14), paddingVertical: 8, borderRadius: sc(26), minHeight: 40, justifyContent: 'center' },
+  crisisCard: { borderRadius: sc(18), padding: sc(16), borderWidth: 1, marginBottom: sc(12), overflow: 'hidden' },
+  crisisGlow: { position: 'absolute', width: sc(170), height: sc(170), borderRadius: sc(85), right: -sc(50), top: -sc(54) },
+  crisisTopRow: { flexDirection: 'row', alignItems: 'center', gap: sc(8), marginBottom: sc(12) },
+  crisisContent: { flex: 1, minWidth: 0 },
+  crisisBadge: { alignSelf: 'flex-start', flexDirection: 'row', alignItems: 'center', gap: sc(6), borderWidth: 1, borderRadius: sc(999), paddingHorizontal: sc(10), paddingVertical: sc(6), marginBottom: sc(10) },
+  crisisLabel: { fontSize: sc(9), fontWeight: '800', letterSpacing: 1.1 },
+  crisisTitle: { fontSize: sc(20), fontWeight: '800', lineHeight: sc(25), marginBottom: sc(6) },
+  crisisDesc: { fontSize: sc(11), lineHeight: sc(17) },
+  crisisMascotWrap: { width: sc(118), height: sc(128), alignItems: 'center', justifyContent: 'flex-end', flexShrink: 0, marginRight: -sc(10), marginTop: -sc(6) },
+  crisisActions: { flexDirection: 'row', gap: sc(8) },
+  crisisCall: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: sc(12), paddingVertical: 8, borderRadius: sc(26), minHeight: 42, justifyContent: 'center' },
   crisisCallText: { color: '#fff', fontWeight: '700', fontSize: sc(12) },
-  crisisTextBtn: { flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: sc(14), paddingVertical: 8, borderRadius: sc(26), minHeight: 40, justifyContent: 'center' },
+  crisisTextBtn: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: sc(12), paddingVertical: 8, borderRadius: sc(26), borderWidth: 1, minHeight: 42, justifyContent: 'center' },
   crisisTextBtnLabel: { fontWeight: '700', fontSize: sc(12) },
   trustCard: { borderRadius: sc(12), padding: sc(16), marginBottom: sc(24) },
   trustCardInner: { flexDirection: 'row', alignItems: 'flex-start', gap: sc(12) },

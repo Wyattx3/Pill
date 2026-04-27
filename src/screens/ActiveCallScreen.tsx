@@ -13,6 +13,7 @@ import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import OtterMascot from '../components/OtterMascot';
+import BrandLogo from '../components/BrandLogo';
 
 const { width: W, height: H } = Dimensions.get('window');
 const sc = (v: number) => Math.round(v * (W / 390));
@@ -142,8 +143,7 @@ export default function ActiveCallScreen({ navigation, theme }: any) {
         {/* Session Header */}
         <View style={[styles.sessionHeader, { paddingTop: insets.top + sc(12) }]}>
           <View style={styles.brand}>
-            <Ionicons name="shield-checkmark" size={sc(18)} color={colors.primary} />
-            <Text style={[styles.brandText, { color: colors.primary }]}>Pill</Text>
+            <BrandLogo width={sc(78)} height={sc(34)} />
           </View>
 
         </View>

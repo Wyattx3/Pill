@@ -5,6 +5,7 @@ import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import OtterMascot from '../components/OtterMascot';
+import BrandLogo from '../components/BrandLogo';
 
 const { width: W } = Dimensions.get('window');
 const sc = (v: number) => Math.round(v * (W / 390));
@@ -24,8 +25,7 @@ export default function SecureSetupScreen({ navigation, theme }: any) {
       {/* Header */}
       <View style={styles.header}>
         <View style={styles.brand}>
-          <Ionicons name="shield-checkmark" size={sc(22)} color={colors.primary} />
-          <Text style={[styles.brandText, { color: colors.primary }]}>Pill</Text>
+          <BrandLogo width={sc(86)} height={sc(38)} />
         </View>
         <TouchableOpacity style={styles.closeBtn} onPress={() => navigation.goBack()} activeOpacity={0.5}>
           <Ionicons name="close" size={sc(24)} color={colors.onSurfaceVariant} />

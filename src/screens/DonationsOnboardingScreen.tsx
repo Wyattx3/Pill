@@ -6,6 +6,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { setOnboarded } from '../utils/donations';
 import OtterMascot from '../components/OtterMascot';
+import BrandLogo from '../components/BrandLogo';
 
 const { width: W } = Dimensions.get('window');
 const sc = (v: number) => Math.round(v * (W / 390));
@@ -24,7 +25,7 @@ const pages = [
   },
   {
     icon: 'gift' as const,
-    mascot: 'celebrate' as const,
+    mascot: 'donationThanks' as const,
     title: 'Earn Rewards',
     titleAccent: 'As You Give',
     subtitle: 'Unlock gift tiers and earn shareable certificates for your contributions. Giving feels even better with recognition.',
@@ -35,7 +36,7 @@ const pages = [
   },
   {
     icon: 'people' as const,
-    mascot: 'note' as const,
+    mascot: 'fundraiserCreate' as const,
     title: 'Start Your Own',
     titleAccent: 'Fundraiser',
     subtitle: 'Create campaigns for causes you care about. Get verified and reach a community ready to support.',
@@ -82,8 +83,7 @@ export default function DonationsOnboardingScreen({ navigation, theme }: any) {
       {/* Header */}
       <View style={styles.header}>
         <View style={styles.brand}>
-          <Ionicons name="heart-circle" size={sc(22)} color={colors.primary} />
-          <Text style={[styles.brandText, { color: colors.primary }]}>Pill | Give</Text>
+          <BrandLogo width={sc(86)} height={sc(38)} />
         </View>
         {currentPage < pages.length - 1 && (
           <TouchableOpacity onPress={handleSkip} style={styles.touch44} activeOpacity={0.5}>

@@ -1,9 +1,10 @@
-import React, { useState, useMemo } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Dimensions, Switch } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import OtterMascot from '../components/OtterMascot';
+import BrandLogo from '../components/BrandLogo';
 
 const { width: W } = Dimensions.get('window');
 const sc = (v: number) => Math.round(v * (W / 390));
@@ -43,11 +44,12 @@ const recentComments = [
   { name: 'River', avatar: '🌊', rating: 5, text: 'Very patient and kind.', time: '2d ago' },
 ];
 
-export default function ListenerDashboardScreen({ navigation, theme }: any) {
+export default function ListenerDashboardScreen({ navigation, route, theme }: any) {
   const insets = useSafeAreaInsets();
   const { colors, isDark } = theme;
-  const [isAvailable, setIsAvailable] = useState(true);
+  const [isAvailable, setIsAvailable] = useState(false);
   const [timeFilter, setTimeFilter] = useState<'week' | 'month' | 'all'>('month');
+  const mockCallTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const stats = {
     week: { calls: 12, minutes: 186, rating: 4.8, helped: 12 },
@@ -57,8 +59,32 @@ export default function ListenerDashboardScreen({ navigation, theme }: any) {
 
   const current = stats[timeFilter];
   const earnings = { total: 234.50, pending: 45.00, paid: 189.50 };
+  const callMissed = Boolean(route?.params?.callMissed);
+  const lastReview = route?.params?.lastReview;
 
   const pixelData = useMemo(() => generatePixelData(timeFilter, current.calls), [timeFilter, current.calls]);
+
+  useEffect(() => {
+    return () => {
+      if (mockCallTimer.current) {
+        clearTimeout(mockCallTimer.current);
+      }
+    };
+  }, []);
+
+  const handleAvailabilityChange = (nextAvailable: boolean) => {
+    setIsAvailable(nextAvailable);
+
+    if (mockCallTimer.current) {
+      clearTimeout(mockCallTimer.current);
+    }
+
+    if (nextAvailable) {
+      mockCallTimer.current = setTimeout(() => {
+        navigation.navigate('IncomingCall', { source: 'listenerDashboard' });
+      }, 900);
+    }
+  };
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
@@ -73,8 +99,7 @@ export default function ListenerDashboardScreen({ navigation, theme }: any) {
           <Ionicons name="arrow-back" size={sc(22)} color={colors.onSurface} />
         </TouchableOpacity>
         <View style={styles.brand}>
-          <Ionicons name="shield-checkmark" size={sc(22)} color={colors.primary} />
-          <Text style={[styles.brandText, { color: colors.primary }]}>Listener Dashboard</Text>
+          <BrandLogo width={sc(86)} height={sc(38)} />
         </View>
         <TouchableOpacity onPress={() => navigation.navigate('Profile')} style={[styles.avatar, { backgroundColor: colors.surfaceContainerHigh }]} activeOpacity={0.5}>
           <Ionicons name="person" size={sc(18)} color={colors.onSurfaceVariant} />
@@ -84,13 +109,25 @@ export default function ListenerDashboardScreen({ navigation, theme }: any) {
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         {/* Availability Toggle */}
         {/* Availability Toggle */}
+        {callMissed && (
+          <View style={[styles.noticeCard, { backgroundColor: colors.errorContainer + '22', borderColor: colors.error + '24' }]}>
+            <Ionicons name="call" size={sc(17)} color={colors.error} style={{ transform: [{ rotate: '135deg' }] }} />
+            <Text style={[styles.noticeText, { color: colors.onErrorContainer }]}>Mock call auto-declined after 10 seconds.</Text>
+          </View>
+        )}
+        {lastReview && (
+          <View style={[styles.noticeCard, { backgroundColor: colors.primaryContainer + '30', borderColor: colors.primary + '22' }]}>
+            <Ionicons name="checkmark-circle" size={sc(17)} color={colors.primary} />
+            <Text style={[styles.noticeText, { color: colors.onPrimaryContainer }]}>Feedback saved: {lastReview.mentalStatus}% mental status.</Text>
+          </View>
+        )}
         <TouchableOpacity
           style={[styles.availCard, { backgroundColor: isAvailable ? colors.primaryContainer + '1A' : colors.surfaceContainerLow }]}
-          onPress={() => setIsAvailable(!isAvailable)}
+          onPress={() => handleAvailabilityChange(!isAvailable)}
           activeOpacity={0.7}
         >
           <View style={styles.availLeft}>
-            <OtterMascot name="tea" size={sc(56)} containerStyle={styles.availMascot} />
+            <OtterMascot name="listenerDashboard" size={sc(56)} containerStyle={styles.availMascot} />
             <View>
               <Text style={[styles.availTitle, { color: colors.onSurface }]}>{isAvailable ? 'You Are Available' : 'You Are Paused'}</Text>
               <Text style={[styles.availDesc, { color: colors.onSurfaceVariant }]}>
@@ -100,7 +137,7 @@ export default function ListenerDashboardScreen({ navigation, theme }: any) {
           </View>
           <Switch
             value={isAvailable}
-            onValueChange={setIsAvailable}
+            onValueChange={handleAvailabilityChange}
             trackColor={{ false: colors.outlineVariant + '66', true: colors.primary }}
             thumbColor={colors.background}
           />
@@ -272,6 +309,8 @@ const styles = StyleSheet.create({
   avatar: { width: sc(36), height: sc(36), borderRadius: sc(18), alignItems: 'center', justifyContent: 'center' },
   scrollContent: { paddingHorizontal: sc(18), paddingTop: sc(8), paddingBottom: sc(100) },
 
+  noticeCard: { flexDirection: 'row', alignItems: 'center', gap: sc(8), borderRadius: sc(14), paddingHorizontal: sc(14), paddingVertical: sc(11), borderWidth: 1, marginBottom: sc(8) },
+  noticeText: { flex: 1, fontSize: sc(12), lineHeight: sc(17), fontWeight: '700' },
   availCard: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', borderRadius: sc(14), paddingHorizontal: sc(18), paddingVertical: sc(14), marginBottom: sc(6) },
   availLeft: { flexDirection: 'row', alignItems: 'center', gap: sc(10) },
   availMascot: { width: sc(56), alignItems: 'center', flexShrink: 0 },

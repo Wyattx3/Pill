@@ -5,6 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import BottomNav from '../components/BottomNav';
 import OtterMascot from '../components/OtterMascot';
+import BrandLogo from '../components/BrandLogo';
 
 const { width: W } = Dimensions.get('window');
 const sc = (v: number) => Math.round(v * (W / 390));
@@ -20,8 +21,7 @@ export default function SettingsScreen({ navigation, theme }: any) {
       {/* Top Bar */}
       <View style={[styles.topBar, { paddingTop: insets.top }]}>
         <View style={styles.brand}>
-          <Ionicons name="shield-checkmark" size={sc(22)} color={colors.primary} />
-          <Text style={[styles.brandText, { color: colors.primary }]}>Pill</Text>
+          <BrandLogo width={sc(86)} height={sc(38)} />
         </View>
       </View>
 
@@ -33,7 +33,7 @@ export default function SettingsScreen({ navigation, theme }: any) {
             <Text style={[styles.title, { color: colors.onBackground }]}>Settings</Text>
             <Text style={[styles.subtitle, { color: colors.onSurfaceVariant }]}>Personalize your safe space</Text>
           </View>
-          <OtterMascot name="note" size={sc(92)} containerStyle={styles.settingsMascot} />
+          <OtterMascot name="settings" size={sc(92)} containerStyle={styles.settingsMascot} />
         </View>
 
         {/* Appearance & Privacy PIN */}

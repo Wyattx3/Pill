@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, Dimensions } from 'react-nati
 import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import OtterMascot from '../components/OtterMascot';
 
 const { width: W, height: H } = Dimensions.get('window');
 const sc = (v: number) => Math.round(v * (W / 390));
@@ -12,12 +13,16 @@ export default function IncomingCallScreen({ navigation, theme }: any) {
   const { colors, isDark } = theme;
   const [countdown, setCountdown] = useState(10);
 
+  const declineCall = () => {
+    navigation.replace('ListenerDashboard', { callMissed: true });
+  };
+
   useEffect(() => {
     const timer = setInterval(() => {
       setCountdown((prev) => {
         if (prev <= 1) {
           clearInterval(timer);
-          navigation.navigate('ActiveCall');
+          navigation.replace('ListenerDashboard', { callMissed: true });
           return 0;
         }
         return prev - 1;
@@ -40,11 +45,11 @@ export default function IncomingCallScreen({ navigation, theme }: any) {
       {/* Upper Content */}
       <View style={[styles.upperContent, { paddingTop: insets.top + sc(32) }]}>
         <View style={[styles.shieldIcon, { backgroundColor: colors.surfaceContainerLowest }]}>
-          <Ionicons name="shield-checkmark" size={sc(30)} color={colors.primary} />
+          <Ionicons name="radio" size={sc(30)} color={colors.primary} />
         </View>
 
-        <Text style={[styles.title, { color: colors.onSurface }]}>A soul needs support...</Text>
-        <Text style={[styles.subtitle, { color: colors.onSurfaceVariant }]}>A silent sanctuary awaits your presence.</Text>
+        <Text style={[styles.title, { color: colors.onSurface }]}>Mock talker is calling...</Text>
+        <Text style={[styles.subtitle, { color: colors.onSurfaceVariant }]}>Accept when you are ready to hold a calm, private space.</Text>
       </View>
 
       {/* Pulse Illustration */}
@@ -53,14 +58,12 @@ export default function IncomingCallScreen({ navigation, theme }: any) {
           <View style={[styles.pulseRing, styles.pulseRingOuter, { borderColor: colors.primary + '1A' }]} />
           <View style={[styles.pulseRing, styles.pulseRingMid, { borderColor: colors.primary + '33' }]} />
           <View style={[styles.pulseGlass, { backgroundColor: colors.primaryContainer + '4D' }]}>
-            <View style={[styles.pulseInner, { backgroundColor: colors.primary }]}>
-              <Ionicons name="bar-chart" size={sc(26)} color={colors.onPrimary} />
-            </View>
+            <OtterMascot name="homeCall" size={sc(92)} />
           </View>
         </View>
 
         <View style={styles.timerSection}>
-          <Text style={[styles.timerLabel, { color: colors.onSurfaceVariant }]}>Auto-rerouting in</Text>
+          <Text style={[styles.timerLabel, { color: colors.onSurfaceVariant }]}>Auto-declines in</Text>
           <Text style={[styles.timerCountdown, { color: colors.primary }]}>
             00:{countdown.toString().padStart(2, '0')}
           </Text>
@@ -69,21 +72,21 @@ export default function IncomingCallScreen({ navigation, theme }: any) {
 
       {/* Bottom Actions */}
       <View style={[styles.bottomActions, { paddingBottom: insets.bottom + sc(20) }]}>
-        <TouchableOpacity style={[styles.acceptButton, { backgroundColor: colors.primary }]} onPress={() => navigation.navigate('ActiveCall')} activeOpacity={0.8}>
+        <TouchableOpacity style={[styles.acceptButton, { backgroundColor: colors.primary }]} onPress={() => navigation.replace('ListenerCall')} activeOpacity={0.8}>
           <Ionicons name="call" size={sc(22)} color={colors.onPrimary} />
           <Text style={[styles.acceptText, { color: colors.onPrimary }]}>Accept</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={[styles.declineButton, { backgroundColor: colors.surfaceContainerHigh }]} onPress={() => navigation.goBack()} activeOpacity={0.8}>
+        <TouchableOpacity style={[styles.declineButton, { backgroundColor: colors.surfaceContainerHigh }]} onPress={declineCall} activeOpacity={0.8}>
           <Ionicons name="call" size={sc(22)} color={colors.onSurfaceVariant} style={{ transform: [{ rotate: '135deg' }] }} />
           <Text style={[styles.declineText, { color: colors.onSurfaceVariant }]}>Decline</Text>
         </TouchableOpacity>
 
-        <Text style={[styles.declineNote, { color: colors.onSurfaceVariant }]}>Declining will safely pass this request to the next available listener.</Text>
+        <Text style={[styles.declineNote, { color: colors.onSurfaceVariant }]}>If you do not answer within 10 seconds, the call is automatically passed on.</Text>
       </View>
 
       {/* Exit Button - render last with high zIndex */}
-      <TouchableOpacity style={[styles.exitButton, { top: insets.top + sc(16), right: sc(16) }]} activeOpacity={0.8}>
+      <TouchableOpacity style={[styles.exitButton, { top: insets.top + sc(16), right: sc(16) }]} onPress={declineCall} activeOpacity={0.8}>
         <View style={[styles.exitButtonInner, { backgroundColor: colors.errorContainer + '33' }]}>
           <Ionicons name="close" size={sc(18)} color={colors.onErrorContainer} />
         </View>
@@ -107,8 +110,7 @@ const styles = StyleSheet.create({
   pulseRing: { position: 'absolute', borderRadius: 9999 },
   pulseRingOuter: { width: '100%', height: '100%', borderWidth: 1, opacity: 0.2 },
   pulseRingMid: { width: '75%', height: '75%', borderWidth: 1, opacity: 0.4 },
-  pulseGlass: { width: sc(90), height: sc(90), borderRadius: sc(45), alignItems: 'center', justifyContent: 'center' },
-  pulseInner: { width: sc(48), height: sc(48), borderRadius: sc(24), alignItems: 'center', justifyContent: 'center' },
+  pulseGlass: { width: sc(96), height: sc(96), borderRadius: sc(48), alignItems: 'center', justifyContent: 'center' },
   timerSection: { alignItems: 'center' },
   timerLabel: { fontSize: sc(9), fontWeight: '600', textTransform: 'uppercase', letterSpacing: 3, marginBottom: sc(4) },
   timerCountdown: { fontSize: sc(28), fontWeight: '700' },

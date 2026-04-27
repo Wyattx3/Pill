@@ -17,6 +17,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 import BottomNav from '../components/BottomNav';
 import OtterMascot from '../components/OtterMascot';
+import BrandLogo from '../components/BrandLogo';
 import { getFundraisers, Fundraiser, getFundraiserAccount, isFullyVerified, getNextVerificationStep } from '../utils/donations';
 
 const { width: W } = Dimensions.get('window');
@@ -99,10 +100,7 @@ export default function DonationsFeedScreen({ navigation, theme }: any) {
       {/* Top Bar */}
       <View style={[styles.topBar, { paddingTop: insets.top }]}>
         <View style={styles.brand}>
-          <Ionicons name="heart-circle" size={sc(20)} color={colors.primary} />
-          <Text style={[styles.brandText, { color: colors.primary }]}>
-            Pill | Donation
-          </Text>
+          <BrandLogo width={sc(86)} height={sc(38)} />
         </View>
         <TouchableOpacity
           style={[styles.menuBtn, { backgroundColor: colors.surfaceContainerHigh }]}
@@ -168,12 +166,12 @@ export default function DonationsFeedScreen({ navigation, theme }: any) {
       {/* Feed */}
       {loading ? (
         <View style={styles.stateContainer}>
-          <OtterMascot name="donate" size={sc(112)} containerStyle={styles.stateMascot} />
+          <OtterMascot name="donationThanks" size={sc(112)} containerStyle={styles.stateMascot} />
           <ActivityIndicator size="large" color={colors.primary} />
         </View>
       ) : fundraisers.length === 0 ? (
         <View style={styles.stateContainer}>
-          <OtterMascot name="donate" size={sc(136)} containerStyle={styles.stateMascot} />
+          <OtterMascot name="fundraiserCreate" size={sc(136)} containerStyle={styles.stateMascot} />
           <Text style={[styles.stateTitle, { color: colors.onSurface }]}>No fundraisers yet</Text>
           <Text style={[styles.stateSub, { color: colors.onSurfaceVariant }]}>
             Be the first to start a campaign
