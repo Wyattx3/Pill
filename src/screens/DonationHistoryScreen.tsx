@@ -16,19 +16,26 @@ import * as MediaLibrary from 'expo-media-library';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
+import ViewShot from 'react-native-view-shot';
 import BottomNav from '../components/BottomNav';
 import { getDonationHistory, DonationRecord } from '../utils/donations';
 
 const { width: W } = Dimensions.get('window');
 const sc = (v: number) => Math.round(v * (W / 390));
+const CERTIFICATE_WIDTH = Math.min(W - sc(28), sc(360));
+const CERTIFICATE_HEIGHT = Math.round(CERTIFICATE_WIDTH * 1.42);
+const logoMark = require('../../assets/brand/logo-mark.png');
+const logoText = require('../../assets/brand/logo-text.png');
 
 export default function DonationHistoryScreen({ navigation, theme }: any) {
   const insets = useSafeAreaInsets();
   const { colors, isDark } = theme;
   const [donations, setDonations] = useState<DonationRecord[]>([]);
   const [selectedReward, setSelectedReward] = useState<DonationRecord | null>(null);
+  const [selectedCertificate, setSelectedCertificate] = useState<DonationRecord | null>(null);
   const [zoomedImageUri, setZoomedImageUri] = useState<string | null>(null);
   const [downloading, setDownloading] = useState(false);
+  const certificateRef = useRef<ViewShot | null>(null);
 
   useFocusEffect(
     useCallback(() => {
@@ -40,6 +47,28 @@ export default function DonationHistoryScreen({ navigation, theme }: any) {
     const date = new Date(ts);
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     return `${months[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;
+  };
+
+  const formatCertificateAmount = (donation: DonationRecord) => {
+    if (donation.donationType === 'money') {
+      return `$${donation.amount.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
+    }
+    return `$${donation.amount.toLocaleString('en-US')} ad-funded gift`;
+  };
+
+  const getCertificateId = (donation: DonationRecord) => {
+    if (donation.certificateId) return donation.certificateId;
+    const suffix = donation.id.replace(/[^a-z0-9]/gi, '').slice(-6).toLowerCase() || 'gift';
+    return `cert-${donation.timestamp}-${suffix}`;
+  };
+
+  const makeVerificationCode = (donation: DonationRecord) => {
+    const raw = `${getCertificateId(donation)}-${donation.postId}-${donation.amount}-${donation.timestamp}`;
+    let hash = 0;
+    for (let i = 0; i < raw.length; i += 1) {
+      hash = ((hash << 5) - hash + raw.charCodeAt(i)) >>> 0;
+    }
+    return hash.toString(16).toUpperCase().padStart(8, '0');
   };
 
   const handleDownloadImage = async () => {
@@ -66,8 +95,167 @@ export default function DonationHistoryScreen({ navigation, theme }: any) {
     }
   };
 
+  const handleSaveCertificatePhoto = async () => {
+    if (!selectedCertificate || downloading) return;
+    try {
+      setDownloading(true);
+      const { status } = await MediaLibrary.requestPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert('Permission Required', 'Please grant photo library permission to save certificates.');
+        return;
+      }
+
+      const uri = await certificateRef.current?.capture?.();
+      if (!uri) {
+        throw new Error('Certificate preview is not ready yet.');
+      }
+
+      const asset = await MediaLibrary.createAssetAsync(uri);
+      const album = await MediaLibrary.getAlbumAsync('Pill Certificates');
+      if (album) {
+        await MediaLibrary.addAssetsToAlbumAsync([asset], album);
+      } else {
+        await MediaLibrary.createAlbumAsync('Pill Certificates', asset, false);
+      }
+      Alert.alert('Saved', 'Donation certificate saved to your photo library.');
+    } catch (e: any) {
+      Alert.alert('Error', e.message || 'Failed to save certificate');
+    } finally {
+      setDownloading(false);
+    }
+  };
+
   const openPost = (postId: string) => {
     navigation.navigate('DonationPostDetail', { postId });
+  };
+
+  const renderCertificate = (donation: DonationRecord) => {
+    const certId = getCertificateId(donation);
+    const verificationCode = makeVerificationCode(donation);
+    const donorDisplay = donation.donorName || 'Anonymous Supporter';
+    const contributionType = donation.donationType === 'money' ? 'Direct donation' : 'Ad watch donation';
+    const issuedAt = new Date(donation.timestamp).toLocaleTimeString('en-US', {
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+
+    return (
+      <ViewShot
+        ref={certificateRef}
+        options={{ format: 'png', quality: 1, result: 'tmpfile' }}
+        style={styles.certificateShot}
+      >
+        <View collapsable={false} style={styles.donationDocument}>
+          <LinearGradient
+            colors={['#fdfbfb', '#ebedee']}
+            style={StyleSheet.absoluteFillObject}
+          />
+          {/* Hologram Effect Background Layers */}
+          <LinearGradient
+            colors={['rgba(255,154,158,0.06)', 'rgba(254,207,239,0.06)', 'rgba(253,203,110,0.06)']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={StyleSheet.absoluteFillObject}
+          />
+          <LinearGradient
+            colors={['rgba(161,196,253,0.06)', 'rgba(194,233,251,0.06)', 'rgba(207,217,223,0.06)']}
+            start={{ x: 1, y: 0 }}
+            end={{ x: 0, y: 1 }}
+            style={StyleSheet.absoluteFillObject}
+          />
+
+          <View pointerEvents="none" style={styles.certificateWatermark}>
+            {Array.from({ length: 48 }).map((_, i) => (
+              <View
+                key={i}
+                style={[
+                  styles.watermarkTile,
+                  {
+                    left: -sc(20) + (i % 6) * sc(60),
+                    top: -sc(20) + Math.floor(i / 6) * sc(65),
+                    opacity: (i % 3 === 0) ? 0.06 : 0.03,
+                    transform: [{ rotate: i % 2 === 0 ? '-15deg' : '15deg' }, { scale: i % 2 === 0 ? 0.8 : 1.2 }],
+                  },
+                ]}
+              >
+                <Image source={logoMark} style={[styles.watermarkMark, { tintColor: i % 3 === 0 ? '#007AFF' : '#5856D6' }]} resizeMode="contain" />
+                <Image source={logoText} style={[styles.watermarkTextLogo, { tintColor: i % 3 === 0 ? '#34C759' : '#FF9500' }]} resizeMode="contain" />
+              </View>
+            ))}
+            <Image source={logoMark} style={styles.centerWatermarkMark} resizeMode="contain" />
+            <Image source={logoText} style={styles.centerWatermarkText} resizeMode="contain" />
+          </View>
+
+          <Text style={styles.microTextTop} numberOfLines={1}>
+            SECURE DONATION RECORD • {verificationCode} • {certId.toUpperCase()} • SECURE DONATION RECORD
+          </Text>
+          <Text style={styles.microTextBottom} numberOfLines={1}>
+            {certId.toUpperCase()} • PILL LEDGER • AUTHENTICATED • {verificationCode}
+          </Text>
+
+          <View style={styles.documentContent}>
+            <View style={styles.documentHeader}>
+              <View style={styles.documentBrand}>
+                <Image source={logoMark} style={styles.documentLogoMark} resizeMode="contain" />
+                <Image source={logoText} style={styles.documentLogoText} resizeMode="contain" />
+              </View>
+              <View style={styles.documentIssueBox}>
+                <Text style={styles.issueLabel}>CERTIFICATE NO.</Text>
+                <Text style={styles.issueValue} numberOfLines={2}>{certId.toUpperCase()}</Text>
+              </View>
+            </View>
+
+            <View style={styles.titleBlock}>
+              <Text style={styles.officialTitle}>Certificate of Donation</Text>
+              <Text style={styles.officialSubtitle}>This is to certify that</Text>
+            </View>
+
+            <View style={styles.donorPanel}>
+              <Text style={styles.certDonor} numberOfLines={1}>{donorDisplay}</Text>
+            </View>
+
+            <Text style={styles.certStatement}>has generously donated</Text>
+            <Text style={styles.certAmount}>{formatCertificateAmount(donation)}</Text>
+            <Text style={styles.certStatement}>to support the cause</Text>
+            <Text style={styles.certFundraiser} numberOfLines={2}>{donation.postTitle}</Text>
+
+            <View style={styles.documentTable}>
+              <View style={styles.tableRow}>
+                <View style={styles.tableCell}>
+                  <Text style={styles.tableLabel}>Organizer</Text>
+                  <Text style={styles.tableValue} numberOfLines={1}>{donation.creatorName}</Text>
+                </View>
+                <View style={styles.tableCell}>
+                  <Text style={styles.tableLabel}>Date</Text>
+                  <Text style={styles.tableValue}>{formatDate(donation.timestamp)}</Text>
+                </View>
+              </View>
+              <View style={styles.tableDivider} />
+              <View style={styles.tableRow}>
+                <View style={styles.tableCell}>
+                  <Text style={styles.tableLabel}>Type</Text>
+                  <Text style={styles.tableValue}>{contributionType}</Text>
+                </View>
+                <View style={styles.tableCell}>
+                  <Text style={styles.tableLabel}>Time</Text>
+                  <Text style={styles.tableValue}>{issuedAt}</Text>
+                </View>
+              </View>
+            </View>
+
+            <View style={styles.securityBand}>
+              <View style={styles.securitySealWrapper}>
+                <Image source={logoMark} style={styles.officialSealLogo} resizeMode="contain" />
+              </View>
+              <View style={styles.securityTextBlock}>
+                <Text style={styles.securityLabel}>AUTHENTICITY HASH</Text>
+                <Text style={styles.securityCode}>{verificationCode}</Text>
+              </View>
+            </View>
+          </View>
+        </View>
+      </ViewShot>
+    );
   };
 
   if (donations.length === 0) {
@@ -184,16 +372,15 @@ export default function DonationHistoryScreen({ navigation, theme }: any) {
                       <Ionicons name="chevron-forward" size={sc(12)} color={colors.primary} />
                     </TouchableOpacity>
                   )}
-                  {!!d.certificateId && (
-                    <TouchableOpacity
-                      style={[styles.chip, { backgroundColor: colors.tertiary + '12' }]}
-                      onPress={() => Alert.alert('Certificate', `Certificate ID: ${d.certificateId}`)}
-                      activeOpacity={0.7}
-                    >
-                      <Ionicons name="download-outline" size={sc(13)} color={colors.tertiary} />
-                      <Text style={[styles.chipText, { color: colors.tertiary }]}>Certificate</Text>
-                    </TouchableOpacity>
-                  )}
+                  <TouchableOpacity
+                    style={[styles.chip, { backgroundColor: colors.tertiary + '12' }]}
+                    onPress={() => setSelectedCertificate(d)}
+                    activeOpacity={0.7}
+                  >
+                    <Ionicons name="ribbon-outline" size={sc(13)} color={colors.tertiary} />
+                    <Text style={[styles.chipText, { color: colors.tertiary }]}>Certificate</Text>
+                    <Ionicons name="chevron-forward" size={sc(12)} color={colors.tertiary} />
+                  </TouchableOpacity>
                 </View>
               </View>
             </TouchableOpacity>
@@ -297,18 +484,71 @@ export default function DonationHistoryScreen({ navigation, theme }: any) {
                   )}
                 </View>
 
-                {/* Certificate */}
-                {selectedReward.certificateId && (
-                  <View style={[styles.fullScreenCert, { backgroundColor: colors.surfaceContainerLow }]}>
-                    <Text style={[styles.summarySectionTitle, { color: colors.onSurface }]}>Certificate</Text>
-                    <Text style={[styles.fullScreenCertId, { color: colors.onSurfaceVariant }]}>
-                      ID: {selectedReward.certificateId}
-                    </Text>
+                <TouchableOpacity
+                  style={[styles.fullScreenCert, { backgroundColor: colors.surfaceContainerLow }]}
+                  onPress={() => {
+                    setSelectedCertificate(selectedReward);
+                    setSelectedReward(null);
+                  }}
+                  activeOpacity={0.72}
+                >
+                  <View style={styles.certOpenRow}>
+                    <View>
+                      <Text style={[styles.summarySectionTitle, { color: colors.onSurface }]}>Certificate</Text>
+                      <Text style={[styles.fullScreenCertId, { color: colors.onSurfaceVariant }]}>
+                        ID: {getCertificateId(selectedReward)}
+                      </Text>
+                    </View>
+                    <Ionicons name="ribbon-outline" size={sc(22)} color={colors.tertiary} />
                   </View>
-                )}
+                </TouchableOpacity>
               </>
             )}
             <View style={{ height: sc(40) }} />
+          </ScrollView>
+        </View>
+      </Modal>
+
+      {/* Certificate document preview */}
+      <Modal
+        visible={!!selectedCertificate}
+        transparent={false}
+        animationType="slide"
+        onRequestClose={() => setSelectedCertificate(null)}
+      >
+        <View style={[styles.fullScreen, { backgroundColor: colors.background }]}>
+          <StatusBar style={isDark ? 'light' : 'dark'} />
+          <View style={[styles.fullScreenHeader, { paddingTop: insets.top }]}>
+            <TouchableOpacity
+              style={[styles.fullScreenBack, { backgroundColor: colors.surfaceContainerHigh }]}
+              onPress={() => setSelectedCertificate(null)}
+              activeOpacity={0.7}
+            >
+              <Ionicons name="arrow-back" size={sc(22)} color={colors.onSurface} />
+            </TouchableOpacity>
+            <Text style={[styles.fullScreenTitle, { color: colors.onSurface }]}>Certificate</Text>
+            <TouchableOpacity
+              style={[styles.saveCertButton, { backgroundColor: colors.primary, opacity: downloading ? 0.6 : 1 }]}
+              onPress={handleSaveCertificatePhoto}
+              disabled={downloading}
+              activeOpacity={0.78}
+            >
+              <Ionicons name={downloading ? 'hourglass' : 'download-outline'} size={sc(18)} color={colors.onPrimary} />
+            </TouchableOpacity>
+          </View>
+
+          <ScrollView
+            contentContainerStyle={styles.certificateModalContent}
+            showsVerticalScrollIndicator={false}
+          >
+            {selectedCertificate && renderCertificate(selectedCertificate)}
+            <View style={[styles.certificateNotice, { backgroundColor: colors.surfaceContainerLow, borderColor: colors.outlineVariant + '24' }]}>
+              <Ionicons name="shield-checkmark-outline" size={sc(17)} color={colors.primary} />
+              <Text style={[styles.certificateNoticeText, { color: colors.onSurfaceVariant }]}>
+                The saved certificate includes a Pill and otter monogram watermark, unique certificate number, and verification code.
+              </Text>
+            </View>
+            <View style={{ height: sc(34) }} />
           </ScrollView>
         </View>
       </Modal>
@@ -422,11 +662,134 @@ const styles = StyleSheet.create({
   summaryDivider: { height: 1, marginVertical: sc(8) },
   fullScreenCert: { borderRadius: sc(14), padding: sc(16) },
   fullScreenCertId: { fontSize: sc(12), fontFamily: 'monospace', marginTop: sc(4) },
+  certOpenRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: sc(12) },
   anonFullBadge: {
     flexDirection: 'row', alignItems: 'center', gap: sc(4),
     borderRadius: sc(10), paddingHorizontal: sc(10), paddingVertical: sc(4),
   },
   anonFullText: { fontSize: sc(11), fontWeight: '600' },
+  saveCertButton: { width: sc(38), height: sc(38), borderRadius: sc(19), alignItems: 'center', justifyContent: 'center' },
+  certificateModalContent: { paddingHorizontal: sc(14), paddingTop: sc(12), alignItems: 'center' },
+  certificateShot: {
+    width: CERTIFICATE_WIDTH,
+    height: CERTIFICATE_HEIGHT,
+    backgroundColor: '#FFFFFF',
+  },
+  donationDocument: {
+    width: CERTIFICATE_WIDTH,
+    height: CERTIFICATE_HEIGHT,
+    backgroundColor: '#FFFFFF',
+    overflow: 'hidden',
+    position: 'relative',
+  },
+  documentContent: {
+    flex: 1,
+    padding: sc(20),
+    backgroundColor: 'transparent',
+  },
+  certificateWatermark: {
+    ...StyleSheet.absoluteFillObject,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  watermarkTile: {
+    position: 'absolute',
+    width: sc(60),
+    height: sc(60),
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  watermarkMark: { width: sc(24), height: sc(24), marginBottom: sc(2) },
+  watermarkTextLogo: { width: sc(36), height: sc(14) },
+  centerWatermarkMark: {
+    position: 'absolute',
+    width: sc(180),
+    height: sc(180),
+    opacity: 0.04,
+  },
+  centerWatermarkText: {
+    position: 'absolute',
+    width: sc(160),
+    height: sc(60),
+    top: '60%',
+    opacity: 0.04,
+  },
+  microTextTop: {
+    position: 'absolute',
+    top: sc(4),
+    left: sc(10),
+    right: sc(10),
+    color: '#86868B',
+    opacity: 0.5,
+    fontSize: sc(5),
+    fontWeight: '700',
+    letterSpacing: 1,
+    textAlign: 'center',
+  },
+  microTextBottom: {
+    position: 'absolute',
+    bottom: sc(4),
+    left: sc(10),
+    right: sc(10),
+    color: '#86868B',
+    opacity: 0.5,
+    fontSize: sc(5),
+    fontWeight: '700',
+    letterSpacing: 1,
+    textAlign: 'center',
+  },
+  documentHeader: { flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between' },
+  documentBrand: { flexDirection: 'row', alignItems: 'center', gap: sc(8) },
+  documentLogoMark: { width: sc(32), height: sc(32) },
+  documentLogoText: { width: sc(64), height: sc(28) },
+  documentIssueBox: { alignItems: 'flex-end', justifyContent: 'center', height: sc(32) },
+  issueLabel: { fontSize: sc(6), color: '#86868B', fontWeight: '700', letterSpacing: 0.5 },
+  issueValue: { fontSize: sc(9), color: '#1D1D1F', fontWeight: '600', fontFamily: 'monospace', marginTop: sc(2) },
+
+  titleBlock: { alignItems: 'center', marginTop: sc(36), marginBottom: sc(24) },
+  officialTitle: { fontSize: sc(26), color: '#1D1D1F', fontWeight: '600', textAlign: 'center', letterSpacing: -0.5 },
+  officialSubtitle: { fontSize: sc(12), color: '#86868B', textAlign: 'center', fontWeight: '400', marginTop: sc(8) },
+
+  donorPanel: { alignItems: 'center', marginBottom: sc(16) },
+  certDonor: { fontSize: sc(30), color: '#1D1D1F', textAlign: 'center', fontWeight: '600', letterSpacing: -0.5 },
+
+  certStatement: { fontSize: sc(12), color: '#86868B', textAlign: 'center', fontWeight: '400', marginTop: sc(4) },
+  certAmount: { fontSize: sc(38), color: '#1D1D1F', textAlign: 'center', fontWeight: '700', marginTop: sc(8), letterSpacing: -1 },
+  certFundraiser: { fontSize: sc(18), color: '#1D1D1F', textAlign: 'center', fontWeight: '500', lineHeight: sc(24), marginTop: sc(8), paddingHorizontal: sc(12) },
+
+  documentTable: {
+    marginTop: sc(32),
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderColor: '#E5E5EA',
+  },
+  tableRow: { flexDirection: 'row' },
+  tableCell: { flex: 1, paddingVertical: sc(12), paddingHorizontal: sc(4) },
+  tableDivider: { height: StyleSheet.hairlineWidth, backgroundColor: '#E5E5EA' },
+  tableLabel: { fontSize: sc(8), color: '#86868B', fontWeight: '600', textTransform: 'uppercase', letterSpacing: 0.5 },
+  tableValue: { fontSize: sc(12), color: '#1D1D1F', fontWeight: '500', marginTop: sc(4) },
+
+  securityBand: {
+    marginTop: 'auto',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: sc(16),
+    paddingTop: sc(16),
+  },
+  securitySealWrapper: {
+    width: sc(40),
+    height: sc(40),
+    borderRadius: sc(20),
+    backgroundColor: '#F5F5F7',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  officialSealLogo: { width: sc(22), height: sc(22), opacity: 0.8 },
+  securityTextBlock: { flex: 1 },
+  securityLabel: { fontSize: sc(7), color: '#86868B', fontWeight: '600', letterSpacing: 0.5 },
+  securityCode: { fontSize: sc(12), color: '#1D1D1F', fontWeight: '500', fontFamily: 'monospace', marginTop: sc(2) },
+  certificateNotice: { flexDirection: 'row', alignItems: 'flex-start', gap: sc(9), borderWidth: 1, borderRadius: sc(14), padding: sc(12), marginTop: sc(12), width: CERTIFICATE_WIDTH },
+  certificateNoticeText: { flex: 1, fontSize: sc(11), lineHeight: sc(17), fontWeight: '700' },
   zoomOverlay: {
     flex: 1, backgroundColor: '#000000ee', justifyContent: 'center', alignItems: 'center',
   },

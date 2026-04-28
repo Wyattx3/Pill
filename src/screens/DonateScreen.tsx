@@ -67,7 +67,7 @@ export default function DonateScreen({ navigation, route, theme }: any) {
     if (amount <= 0) return;
 
     const selectedTier = rewardTiers.find((t) => t.id === selectedReward);
-    const certId = selectedTier ? `cert-${Date.now()}-${Math.random().toString(36).slice(2, 8)}` : undefined;
+    const certId = `cert-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 
     await addComment({
       id: `comment-${Date.now()}`,

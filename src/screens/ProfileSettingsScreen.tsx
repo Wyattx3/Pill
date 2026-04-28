@@ -7,12 +7,14 @@ import {
   ScrollView,
   Dimensions,
   Alert,
+  Image,
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { getFundraiserAccount, FundraiserAccount } from '../utils/donations';
+import * as ImagePicker from 'expo-image-picker';
+import { getFundraiserAccount, createFundraiserAccount, updateFundraiserAccount, FundraiserAccount } from '../utils/donations';
 
 const { width: W } = Dimensions.get('window');
 const sc = (v: number) => Math.round(v * (W / 390));
@@ -46,6 +48,30 @@ export default function ProfileSettingsScreen({ navigation, theme }: any) {
     navigation.navigate('OrgDocumentsUpload');
   };
 
+  const handlePickProfilePhoto = async () => {
+    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (permission.status !== 'granted') {
+      Alert.alert('Permission needed', 'Please allow photo library access to choose a profile photo.');
+      return;
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.82,
+    });
+
+    if (result.canceled || !result.assets?.[0]) return;
+
+    const profileImageUri = result.assets[0].uri;
+    const updated = account
+      ? await updateFundraiserAccount({ profileImageUri })
+      : await createFundraiserAccount({ profileImageUri });
+
+    setAccount(updated);
+  };
+
   const handleSignOut = () => {
     Alert.alert('Sign Out', 'Are you sure you want to sign out?', [
       { text: 'Cancel', style: 'cancel' },
@@ -56,6 +82,8 @@ export default function ProfileSettingsScreen({ navigation, theme }: any) {
   const displayName = account ? (account.email?.split('@')[0] || 'User') : 'User';
   const currentEmail = account?.email || '';
   const currentPhone = account?.phone || 'Not set';
+  const profileImageUri = account?.profileImageUri || '';
+  const profileInitial = displayName.trim().charAt(0).toUpperCase() || 'U';
 
   const InfoRow = ({ icon, label, value, screen }: {
     icon: string; label: string; value: string; screen: string;
@@ -98,9 +126,24 @@ export default function ProfileSettingsScreen({ navigation, theme }: any) {
             end={{ x: 1, y: 1 }}
             style={styles.profileInner}
           >
-            <View style={[styles.profileAvatar, { backgroundColor: colors.primary }]}>
-              <Ionicons name="person" size={sc(32)} color={colors.onPrimary} />
-            </View>
+            <TouchableOpacity
+              onPress={handlePickProfilePhoto}
+              activeOpacity={0.78}
+              style={styles.avatarButton}
+              accessibilityRole="button"
+              accessibilityLabel="Change profile photo"
+            >
+              <View style={[styles.profileAvatar, { backgroundColor: colors.primary + '18', borderColor: colors.primary + '28' }]}>
+                {profileImageUri ? (
+                  <Image source={{ uri: profileImageUri }} style={styles.profileAvatarImage} accessibilityIgnoresInvertColors />
+                ) : (
+                  <Text style={[styles.profileInitial, { color: colors.primary }]}>{profileInitial}</Text>
+                )}
+              </View>
+              <View style={[styles.cameraBadge, { backgroundColor: colors.primary, borderColor: colors.surfaceContainerLow }]}>
+                <Ionicons name="camera" size={sc(13)} color={colors.onPrimary} />
+              </View>
+            </TouchableOpacity>
             <View style={styles.profileInfo}>
               <Text style={[styles.profileName, { color: colors.onSurface }]}>{displayName}</Text>
               <View style={[styles.profileBadge, {
@@ -202,7 +245,11 @@ const styles = StyleSheet.create({
   // Profile card
   profileCard: { borderRadius: sc(20), overflow: 'hidden', marginBottom: sc(20) },
   profileInner: { flexDirection: 'row', alignItems: 'center', padding: sc(20), gap: sc(16) },
-  profileAvatar: { width: sc(64), height: sc(64), borderRadius: sc(32), alignItems: 'center', justifyContent: 'center' },
+  avatarButton: { width: sc(68), height: sc(68), borderRadius: sc(34), position: 'relative', alignItems: 'center', justifyContent: 'center' },
+  profileAvatar: { width: sc(64), height: sc(64), borderRadius: sc(32), alignItems: 'center', justifyContent: 'center', overflow: 'hidden', borderWidth: 1.5 },
+  profileAvatarImage: { width: '100%', height: '100%', resizeMode: 'cover' },
+  profileInitial: { fontSize: sc(25), fontWeight: '900' },
+  cameraBadge: { position: 'absolute', right: 0, bottom: 0, width: sc(25), height: sc(25), borderRadius: sc(13), alignItems: 'center', justifyContent: 'center', borderWidth: 2 },
   profileInfo: { flex: 1 },
   profileName: { fontSize: sc(20), fontWeight: '800', marginBottom: sc(4) },
   profileBadge: { flexDirection: 'row', alignItems: 'center', gap: sc(4), borderRadius: sc(10), paddingHorizontal: sc(10), paddingVertical: sc(4), alignSelf: 'flex-start' },

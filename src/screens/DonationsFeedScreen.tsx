@@ -9,6 +9,7 @@ import {
   Image,
   TextInput,
   ActivityIndicator,
+  Share,
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
@@ -206,54 +207,100 @@ export default function DonationsFeedScreen({ navigation, theme }: any) {
             </View>
           ) : (
             filtered.map((f) => (
-              <TouchableOpacity
-                key={f.id}
-                style={[styles.card, { backgroundColor: colors.surfaceContainerLow }]}
-                onPress={() => navigation.navigate('DonationPostDetail', { postId: f.id })}
-                activeOpacity={0.85}
-              >
-                {f.imageUrl ? (
-                  <Image source={{ uri: f.imageUrl }} style={styles.cardImage} />
-                ) : (
-                  <View style={[styles.cardImagePlaceholder, { backgroundColor: colors.primary + '15' }]}>
-                    <Ionicons name="heart" size={sc(32)} color={colors.primaryFixedDim} />
-                  </View>
-                )}
-                <View style={styles.cardBody}>
-                  <View style={styles.cardHeader}>
-                    <Text style={[styles.cardTitle, { color: colors.onSurface }]} numberOfLines={2}>
-                      {f.title}
-                    </Text>
-                    {f.creatorType === 'organization' && (
-                      <Ionicons name="checkmark-circle" size={sc(16)} color={colors.primary} />
+              <View key={f.id} style={[styles.postContainer, { backgroundColor: 'transparent' }]}>
+                {/* Header: Avatar, Name, Verification, Time */}
+                <View style={styles.postHeader}>
+                  <View style={[styles.postAvatar, { backgroundColor: colors.surfaceVariant }]}>
+                    {f.creatorType === 'organization' ? (
+                      <Ionicons name="business" size={sc(18)} color={colors.onSurfaceVariant} />
+                    ) : (
+                      <Ionicons name="person" size={sc(18)} color={colors.onSurfaceVariant} />
                     )}
                   </View>
-                  <View style={styles.cardCreator}>
-                    <View style={[styles.creatorAvatar, { backgroundColor: colors.surfaceVariant }]}>
-                      <Ionicons name="person" size={sc(12)} color={colors.onSurfaceVariant} />
+                  <View style={styles.postHeaderText}>
+                    <View style={styles.postNameRow}>
+                      <Text style={[styles.postCreatorName, { color: colors.onSurface }]} numberOfLines={1}>
+                        {f.creatorType === 'organization' ? f.orgName : f.creatorName}
+                      </Text>
+                      {f.creatorType === 'organization' && (
+                        <Ionicons name="checkmark-circle" size={sc(14)} color={colors.primary} />
+                      )}
                     </View>
-                    <Text style={[styles.creatorName, { color: colors.onSurfaceVariant }]} numberOfLines={1}>
-                      {f.creatorType === 'organization' ? f.orgName : f.creatorName}
+                    <Text style={[styles.postSubtitle, { color: colors.onSurfaceVariant }]}>
+                      Fundraiser • Suggested
                     </Text>
                   </View>
-                  <View style={styles.progressWrap}>
-                    <View style={[styles.progressBg, { backgroundColor: colors.surfaceContainerHigh }]}>
-                      <LinearGradient
-                        colors={[colors.primaryDim, colors.primaryFixedDim]}
-                        start={{ x: 0, y: 0 }}
-                        end={{ x: 1, y: 0 }}
-                        style={[styles.progressFill, { width: `${progressFill(f)}%` }]}
-                      />
+                  <TouchableOpacity style={styles.postOptionsBtn} activeOpacity={0.6}>
+                    <Ionicons name="ellipsis-horizontal" size={sc(18)} color={colors.onSurfaceVariant} />
+                  </TouchableOpacity>
+                </View>
+
+                {/* Text Content */}
+                <TouchableOpacity
+                  style={styles.postContent}
+                  onPress={() => navigation.navigate('DonationPostDetail', { postId: f.id })}
+                  activeOpacity={0.85}
+                >
+                  <Text style={[styles.postTitle, { color: colors.onSurface }]}>
+                    {f.title}
+                  </Text>
+                  <Text style={[styles.postDescSnippet, { color: colors.onSurfaceVariant }]} numberOfLines={2}>
+                    {f.description}
+                  </Text>
+                </TouchableOpacity>
+
+                {/* Media */}
+                <TouchableOpacity
+                  onPress={() => navigation.navigate('DonationPostDetail', { postId: f.id })}
+                  activeOpacity={0.9}
+                >
+                  {f.imageUrl ? (
+                    <Image source={{ uri: f.imageUrl }} style={styles.postImage} />
+                  ) : (
+                    <View style={[styles.postImagePlaceholder, { backgroundColor: colors.primary + '15' }]}>
+                      <Ionicons name="heart" size={sc(48)} color={colors.primaryFixedDim} />
                     </View>
-                  </View>
+                  )}
+                </TouchableOpacity>
+
+                {/* Footer / Progress */}
+                <View style={styles.postFooter}>
                   <View style={styles.progressRow}>
                     <Text style={[styles.raised, { color: colors.primary }]}>
                       {formatCurrency(f.raisedAmount)} raised
                     </Text>
                     <Text style={[styles.goal, { color: colors.onSurfaceVariant }]}>
-                      {progressLabel(f)}% of {formatCurrency(f.goalAmount)}
+                      of {formatCurrency(f.goalAmount)}
                     </Text>
                   </View>
+                  <View style={[styles.progressBg, { backgroundColor: colors.surfaceContainerHigh }]}>
+                    <LinearGradient
+                      colors={[colors.primaryDim, colors.primaryFixedDim]}
+                      start={{ x: 0, y: 0 }}
+                      end={{ x: 1, y: 0 }}
+                      style={[styles.progressFill, { width: `${progressFill(f)}%` }]}
+                    />
+                  </View>
+
+                  <View style={[styles.postDivider, { backgroundColor: colors.surfaceVariant + '66' }]} />
+
+                  {/* Social Action Row */}
+                  <View style={styles.postActions}>
+                    <TouchableOpacity style={styles.actionBtn} activeOpacity={0.6} onPress={() => navigation.navigate('DonateScreen', { postId: f.id })}>
+                      <Ionicons name="heart-outline" size={sc(22)} color={colors.onSurfaceVariant} />
+                      <Text style={[styles.actionText, { color: colors.onSurfaceVariant }]}>Support</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity style={styles.actionBtn} activeOpacity={0.6} onPress={() => {
+                      Share.share({
+                        message: `Support this cause: ${f.title}\n\nhttps://pill.app/donate/${f.id}`,
+                        title: f.title,
+                      });
+                    }}>
+                      <Ionicons name="share-social-outline" size={sc(22)} color={colors.onSurfaceVariant} />
+                      <Text style={[styles.actionText, { color: colors.onSurfaceVariant }]}>Share</Text>
+                    </TouchableOpacity>
+                  </View>
+                  
                   {f.giftTiers && f.giftTiers.length > 0 && (
                     <View style={[styles.giftBadge, { backgroundColor: colors.tertiaryContainer + '25' }]}>
                       <Ionicons name="gift" size={sc(11)} color={colors.tertiary} />
@@ -263,7 +310,7 @@ export default function DonationsFeedScreen({ navigation, theme }: any) {
                     </View>
                   )}
                 </View>
-              </TouchableOpacity>
+              </View>
             ))
           )}
           <View style={{ height: sc(80) }} />
@@ -307,8 +354,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: sc(40),
     fontSize: sc(14),
   },
-  scrollContent: { paddingHorizontal: sc(16), paddingTop: sc(8) },
-  stateContainer: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: sc(32) },
+  scrollContent: { paddingTop: 0, paddingBottom: sc(12), backgroundColor: 'transparent' },
+  stateContainer: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: sc(32), backgroundColor: 'transparent' },
   stateMascot: { marginBottom: sc(12) },
   stateTitle: { fontSize: sc(20), fontWeight: '800', marginTop: sc(16), marginBottom: sc(6) },
   stateSub: { fontSize: sc(14), textAlign: 'center', marginBottom: sc(24) },
@@ -323,32 +370,114 @@ const styles = StyleSheet.create({
     minHeight: sc(48),
   },
   emptyBtnText: { fontSize: sc(14), fontWeight: '700' },
-  card: { borderRadius: sc(16), marginBottom: sc(12), overflow: 'hidden' },
-  cardImage: { width: '100%', height: sc(140), resizeMode: 'cover' },
-  cardImagePlaceholder: {
+  
+  postContainer: { 
+    marginBottom: 0, 
+    paddingBottom: sc(8),
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderColor: '#E5E5EA',
+  },
+  postHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: sc(16),
+    paddingTop: sc(12),
+    paddingBottom: sc(8),
+  },
+  postAvatar: {
+    width: sc(40),
+    height: sc(40),
+    borderRadius: sc(20),
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: sc(12),
+  },
+  postHeaderText: {
+    flex: 1,
+    justifyContent: 'center',
+  },
+  postNameRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: sc(4),
+  },
+  postCreatorName: {
+    fontSize: sc(15),
+    fontWeight: '700',
+  },
+  postSubtitle: {
+    fontSize: sc(13),
+    marginTop: sc(2),
+  },
+  postOptionsBtn: {
+    padding: sc(4),
+  },
+  postContent: {
+    paddingHorizontal: sc(16),
+    paddingBottom: sc(10),
+  },
+  postTitle: {
+    fontSize: sc(15),
+    fontWeight: '600',
+    lineHeight: sc(21),
+  },
+  postDescSnippet: {
+    fontSize: sc(14),
+    lineHeight: sc(20),
+    marginTop: sc(4),
+  },
+  postImage: {
     width: '100%',
-    height: sc(100),
+    height: sc(240),
+    resizeMode: 'cover',
+  },
+  postImagePlaceholder: {
+    width: '100%',
+    height: sc(200),
     alignItems: 'center',
     justifyContent: 'center',
   },
-  cardBody: { padding: sc(14) },
-  cardHeader: { flexDirection: 'row', alignItems: 'center', gap: sc(6), marginBottom: sc(6) },
-  cardTitle: { fontSize: sc(15), fontWeight: '700', flex: 1 },
-  cardCreator: { flexDirection: 'row', alignItems: 'center', gap: sc(6), marginBottom: sc(10) },
-  creatorAvatar: {
-    width: sc(22),
-    height: sc(22),
-    borderRadius: sc(11),
-    alignItems: 'center',
-    justifyContent: 'center',
+  postFooter: {
+    paddingHorizontal: sc(16),
+    paddingVertical: sc(12),
   },
-  creatorName: { fontSize: sc(12), fontWeight: '500' },
-  progressWrap: { marginBottom: sc(8) },
-  progressBg: { height: sc(6), borderRadius: sc(3), overflow: 'hidden' },
+  progressRow: { 
+    flexDirection: 'row', 
+    alignItems: 'baseline', 
+    gap: sc(6),
+    marginBottom: sc(8) 
+  },
+  raised: { fontSize: sc(15), fontWeight: '700' },
+  goal: { fontSize: sc(13) },
+  progressBg: { 
+    height: sc(6), 
+    borderRadius: sc(3), 
+    overflow: 'hidden',
+    marginBottom: sc(12),
+  },
   progressFill: { height: '100%', borderRadius: sc(3) },
-  progressRow: { flexDirection: 'row', justifyContent: 'space-between' },
-  raised: { fontSize: sc(12), fontWeight: '700' },
-  goal: { fontSize: sc(11) },
+  postDivider: {
+    height: 1,
+    width: '100%',
+    marginVertical: sc(4),
+  },
+  postActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingTop: sc(8),
+    paddingHorizontal: sc(8),
+  },
+  actionBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: sc(6),
+    paddingVertical: sc(4),
+  },
+  actionText: {
+    fontSize: sc(13),
+    fontWeight: '600',
+  },
   giftBadge: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -357,7 +486,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: sc(8),
     paddingVertical: sc(3),
     alignSelf: 'flex-start',
-    marginTop: sc(4),
+    marginTop: sc(12),
   },
   giftBadgeText: { fontSize: sc(10), fontWeight: '700' },
   menuOverlay: {

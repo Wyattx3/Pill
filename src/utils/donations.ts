@@ -72,6 +72,7 @@ export interface DonationRecord {
 
 export interface FundraiserAccount {
   type: 'individual' | 'organization' | null;
+  profileImageUri?: string;
   email: string;
   emailVerified: boolean;
   phone: string;

@@ -393,33 +393,7 @@ export default function ManageFundraisersScreen({ navigation, theme }: any) {
       </View>
 
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        {/* Bulk Actions */}
-        {isSelecting && (
-          <View style={[styles.bulkBar, { backgroundColor: colors.surface, borderColor: colors.primary + '40' }]}>
-            <View style={styles.bulkLeft}>
-              <View style={[styles.bulkCount, { backgroundColor: colors.primary + '18' }]}>
-                <Text style={[styles.bulkCountText, { color: colors.primary }]}>{selectedIds.size}</Text>
-              </View>
-              <Text style={[styles.bulkLabel, { color: colors.onSurface }]}>selected</Text>
-            </View>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.bulkActions}>
-              {(['active', 'paused', 'completed', 'draft'] as string[]).map((s) => (
-                <TouchableOpacity
-                  key={s}
-                  style={[styles.bulkChip, { backgroundColor: STATUS_COLORS[s] + '18' }]}
-                  onPress={() => bulkStatusChange(s)}
-                  activeOpacity={0.7}
-                >
-                  <View style={[styles.bulkChipDot, { backgroundColor: STATUS_COLORS[s] }]} />
-                  <Text style={[styles.bulkChipText, { color: STATUS_COLORS[s] }]}>{s}</Text>
-                </TouchableOpacity>
-              ))}
-              <TouchableOpacity style={[styles.bulkDelete, { backgroundColor: colors.error + '15' }]} onPress={bulkDelete} activeOpacity={0.7}>
-                <Ionicons name="trash-outline" size={sc(14)} color={colors.error} />
-              </TouchableOpacity>
-            </ScrollView>
-          </View>
-        )}
+
 
         {/* Campaign List */}
         {fundraisers.length === 0 ? (
@@ -476,6 +450,42 @@ export default function ManageFundraisersScreen({ navigation, theme }: any) {
 
         <View style={{ height: sc(60) }} />
       </ScrollView>
+
+      {/* Floating Bulk Action Bar */}
+      {isSelecting && (
+        <View style={[styles.floatingActionBar, { 
+          backgroundColor: theme.isDark ? '#2A2A2A' : '#FFFFFF', 
+          bottom: Math.max(insets.bottom + sc(20), sc(40)),
+          shadowColor: theme.isDark ? '#000' : '#888',
+        }]}>
+          <View style={styles.floatingActionLeft}>
+            <View style={[styles.floatingActionBadge, { backgroundColor: colors.primary }]}>
+              <Text style={styles.floatingActionBadgeText}>{selectedIds.size}</Text>
+            </View>
+            <Text style={[styles.floatingActionTitle, { color: colors.onSurface }]}>Selected</Text>
+          </View>
+
+          <View style={styles.floatingActionDivider} />
+
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.floatingActionScroll}>
+            {(['active', 'paused', 'completed', 'draft'] as string[]).map((s) => (
+              <TouchableOpacity
+                key={s}
+                style={[styles.floatingActionBtn, { backgroundColor: colors.surfaceContainerHigh }]}
+                onPress={() => bulkStatusChange(s)}
+                activeOpacity={0.7}
+              >
+                <View style={[styles.floatingActionDot, { backgroundColor: STATUS_COLORS[s] }]} />
+                <Text style={[styles.floatingActionText, { color: colors.onSurface }]}>{s}</Text>
+              </TouchableOpacity>
+            ))}
+            <TouchableOpacity style={[styles.floatingActionBtn, { backgroundColor: colors.error + '15' }]} onPress={bulkDelete} activeOpacity={0.7}>
+              <Ionicons name="trash" size={sc(14)} color={colors.error} />
+              <Text style={[styles.floatingActionText, { color: colors.error }]}>Delete</Text>
+            </TouchableOpacity>
+          </ScrollView>
+        </View>
+      )}
     </View>
   );
 }
@@ -487,17 +497,71 @@ const styles = StyleSheet.create({
   selectText: { fontSize: sc(13), fontWeight: '600' },
   content: { paddingHorizontal: sc(16), paddingTop: sc(8) },
 
-  // Bulk
-  bulkBar: { borderRadius: sc(14), borderWidth: 1, padding: sc(12), marginBottom: sc(12), flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  bulkLeft: { flexDirection: 'row', alignItems: 'center', gap: sc(8) },
-  bulkCount: { width: sc(24), height: sc(24), borderRadius: sc(12), alignItems: 'center', justifyContent: 'center' },
-  bulkCountText: { fontSize: sc(11), fontWeight: '700' },
-  bulkLabel: { fontSize: sc(13), fontWeight: '600' },
-  bulkActions: { flexDirection: 'row', gap: sc(6) },
-  bulkChip: { flexDirection: 'row', alignItems: 'center', gap: sc(4), borderRadius: sc(12), paddingHorizontal: sc(10), paddingVertical: sc(5) },
-  bulkChipDot: { width: sc(6), height: sc(6), borderRadius: sc(3) },
-  bulkChipText: { fontSize: sc(10), fontWeight: '600' },
-  bulkDelete: { width: sc(30), height: sc(30), borderRadius: sc(15), alignItems: 'center', justifyContent: 'center' },
+  // Floating Action Bar
+  floatingActionBar: {
+    position: 'absolute',
+    left: sc(16),
+    right: sc(16),
+    borderRadius: sc(100),
+    padding: sc(8),
+    paddingLeft: sc(16),
+    flexDirection: 'row',
+    alignItems: 'center',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.15,
+    shadowRadius: 20,
+    elevation: 10,
+  },
+  floatingActionLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginRight: sc(12),
+  },
+  floatingActionBadge: {
+    width: sc(24),
+    height: sc(24),
+    borderRadius: sc(12),
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: sc(8),
+  },
+  floatingActionBadgeText: {
+    color: '#FFF',
+    fontSize: sc(12),
+    fontWeight: '800',
+  },
+  floatingActionTitle: {
+    fontSize: sc(13),
+    fontWeight: '700',
+  },
+  floatingActionDivider: {
+    width: 1,
+    height: sc(24),
+    backgroundColor: '#88888840',
+    marginRight: sc(12),
+  },
+  floatingActionScroll: {
+    flex: 1,
+  },
+  floatingActionBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: sc(6),
+    borderRadius: sc(20),
+    paddingHorizontal: sc(16),
+    paddingVertical: sc(10),
+    marginRight: sc(8),
+  },
+  floatingActionDot: {
+    width: sc(8),
+    height: sc(8),
+    borderRadius: sc(4),
+  },
+  floatingActionText: {
+    fontSize: sc(13),
+    fontWeight: '600',
+    textTransform: 'capitalize',
+  },
 
   // Campaign card
   campaignCard: { borderRadius: sc(14), padding: sc(14), marginBottom: sc(8) },

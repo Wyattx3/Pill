@@ -149,8 +149,9 @@ export default function DonationPostDetailScreen({ navigation, route, theme }: a
           </View>
         )}
 
-        {/* Title & Creator */}
-        <View style={styles.header}>
+        <View style={styles.contentPadding}>
+          {/* Title & Creator */}
+          <View style={styles.header}>
           <View style={styles.headerRow}>
             <Text style={[styles.title, { color: colors.onSurface }]}>{fundraiser.title}</Text>
             {fundraiser.creatorType === 'organization' && (
@@ -296,7 +297,8 @@ export default function DonationPostDetailScreen({ navigation, route, theme }: a
           )}
         </View>
 
-        <View style={{ height: sc(100) }} />
+          <View style={{ height: sc(100) }} />
+        </View>
       </ScrollView>
 
       {/* Donate CTA */}
@@ -330,17 +332,18 @@ const styles = StyleSheet.create({
     paddingHorizontal: sc(16), paddingBottom: sc(12),
   },
   topTitle: { fontSize: sc(16), fontWeight: '700' },
-  scrollContent: { paddingHorizontal: sc(16), paddingTop: sc(8) },
-  mediaCarousel: { marginBottom: sc(16) },
-  mediaItem: { marginRight: sc(8) },
-  mediaImage: { width: W - sc(32), height: sc(220), borderRadius: sc(16), resizeMode: 'cover' },
+  scrollContent: { paddingTop: 0 },
+  contentPadding: { paddingHorizontal: sc(16), paddingTop: sc(16) },
+  mediaCarousel: { marginBottom: 0 },
+  mediaItem: { marginRight: 0 },
+  mediaImage: { width: W, height: sc(260), borderRadius: 0, resizeMode: 'cover' },
   mediaVideo: {
-    width: W - sc(32), height: sc(220), borderRadius: sc(16),
+    width: W, height: sc(260), borderRadius: 0,
     alignItems: 'center', justifyContent: 'center',
   },
-  heroImage: { width: '100%', height: sc(200), borderRadius: sc(16), marginBottom: sc(16), resizeMode: 'cover' },
+  heroImage: { width: W, height: sc(240), borderRadius: 0, resizeMode: 'cover' },
   heroImagePlaceholder: {
-    width: '100%', height: sc(160), borderRadius: sc(16), marginBottom: sc(16),
+    width: W, height: sc(200), borderRadius: 0,
     alignItems: 'center', justifyContent: 'center',
   },
   header: { marginBottom: sc(16) },
@@ -377,7 +380,6 @@ const styles = StyleSheet.create({
   typeText: { fontSize: sc(10), fontWeight: '700' },
   commentTime: { fontSize: sc(10) },
   commentMsg: { fontSize: sc(13), lineHeight: sc(18), marginTop: sc(4) },
-
   repliesContainer: { marginBottom: sc(8), marginTop: sc(6) },
   replyItem: { paddingLeft: sc(12), borderLeftWidth: 2, marginBottom: sc(6) },
   replyHeader: { flexDirection: 'row', alignItems: 'center', gap: sc(4), marginBottom: sc(2) },

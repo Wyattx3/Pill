@@ -40,7 +40,6 @@ const routeMascots: Record<string, OtterMascotName> = {
   OrganizationVerification: 'verificationDocs',
   OrgDocumentsUpload: 'verificationDocs',
   PrivacySecurity: 'settings',
-  ProfileSettings: 'profile',
   ResourceDetail: 'guide',
   VerificationType: 'verificationDocs',
 };
