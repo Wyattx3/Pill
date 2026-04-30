@@ -18,6 +18,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as ImagePicker from 'expo-image-picker';
+import OtterMascot from '../components/OtterMascot';
 import { createFundraiserAccount, getFundraiserAccount } from '../utils/donations';
 
 const { width: W, height: H } = Dimensions.get('window');
@@ -257,6 +258,12 @@ export default function MyFundraiserAuthScreen({ navigation, theme }: any) {
     </TouchableOpacity>
   );
 
+  const renderHeroMascot = () => (
+    <View style={styles.heroMascot}>
+      <OtterMascot name="fundraiserAuth" size={sc(132)} />
+    </View>
+  );
+
   return (
     <KeyboardAvoidingView
       style={[styles.root, { backgroundColor: colors.background }]}
@@ -337,9 +344,7 @@ export default function MyFundraiserAuthScreen({ navigation, theme }: any) {
         {/* Sign In mode */}
         {mode === 'signin' && (
           <View style={styles.page}>
-            <View style={styles.heroIcon}>
-              <Ionicons name="shield-checkmark" size={sc(56)} color={colors.primary} />
-            </View>
+            {renderHeroMascot()}
             <Text style={[styles.heroTitle, { color: colors.onSurface }]}>Welcome Back</Text>
             <Text style={[styles.heroSub, { color: colors.onSurfaceVariant }]}>
               Sign in to manage your campaigns, track donations, and connect with supporters
@@ -381,9 +386,7 @@ export default function MyFundraiserAuthScreen({ navigation, theme }: any) {
         {/* Sign Up — Step 0: Account */}
         {mode === 'signup' && step === 0 && (
           <View style={styles.page}>
-            <View style={styles.heroIcon}>
-              <Ionicons name="person-add" size={sc(56)} color={colors.primary} />
-            </View>
+            {renderHeroMascot()}
             <Text style={[styles.heroTitle, { color: colors.onSurface }]}>Create Your Account</Text>
             <Text style={[styles.heroSub, { color: colors.onSurfaceVariant }]}>
               Set up your fundraiser profile — it only takes a minute
@@ -413,9 +416,7 @@ export default function MyFundraiserAuthScreen({ navigation, theme }: any) {
         {/* Sign Up — Step 1: Email */}
         {mode === 'signup' && step === 1 && (
           <View style={styles.page}>
-            <View style={styles.heroIcon}>
-              <Ionicons name="mail" size={sc(56)} color={colors.primary} />
-            </View>
+            {renderHeroMascot()}
             <Text style={[styles.heroTitle, { color: colors.onSurface }]}>Verify Email</Text>
             <Text style={[styles.heroSub, { color: colors.onSurfaceVariant }]}>
               {emailSent
@@ -464,9 +465,7 @@ export default function MyFundraiserAuthScreen({ navigation, theme }: any) {
         {/* Sign Up — Step 2: Phone */}
         {mode === 'signup' && step === 2 && (
           <View style={styles.page}>
-            <View style={styles.heroIcon}>
-              <Ionicons name="call" size={sc(56)} color={colors.primary} />
-            </View>
+            {renderHeroMascot()}
             <Text style={[styles.heroTitle, { color: colors.onSurface }]}>Verify Phone</Text>
             <Text style={[styles.heroSub, { color: colors.onSurfaceVariant }]}>
               {phoneSent
@@ -514,9 +513,7 @@ export default function MyFundraiserAuthScreen({ navigation, theme }: any) {
         {/* Sign Up — Step 3: NRC Upload */}
         {mode === 'signup' && step === 3 && (
           <View style={styles.page}>
-            <View style={styles.heroIcon}>
-              <Ionicons name="shield-checkmark" size={sc(56)} color={colors.primary} />
-            </View>
+            {renderHeroMascot()}
             <Text style={[styles.heroTitle, { color: colors.onSurface }]}>Identity Verification</Text>
             <Text style={[styles.heroSub, { color: colors.onSurfaceVariant }]}>
               Upload your NRC and a selfie to complete your account setup
@@ -565,7 +562,7 @@ const styles = StyleSheet.create({
 
   content: { flex: 1 },
   page: { paddingHorizontal: sc(24), paddingTop: sc(8) },
-  heroIcon: { alignItems: 'center', marginBottom: sc(12) },
+  heroMascot: { alignItems: 'center', justifyContent: 'center', height: sc(126), marginTop: -sc(6), marginBottom: sc(6) },
   heroTitle: { fontSize: sc(24), fontWeight: '800', textAlign: 'center', marginBottom: sc(6) },
   heroSub: { fontSize: sc(13), lineHeight: sc(20), textAlign: 'center', marginBottom: sc(24) },
 

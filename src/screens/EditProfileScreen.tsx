@@ -342,7 +342,7 @@ const styles = StyleSheet.create({
   sectionTitle: { fontSize: sc(18), fontWeight: '800' },
   sectionCount: { fontSize: sc(14), fontWeight: '700' },
   
-  avatarScrollContent: { paddingRight: sc(20), gap: sc(12) },
+  avatarScrollContent: { paddingTop: sc(8), paddingRight: sc(20), gap: sc(12) },
   avatarOptionWrapper: { position: 'relative' },
   avatarOption: { 
     width: sc(100), 
@@ -418,4 +418,3 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
   },
 });
-

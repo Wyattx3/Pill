@@ -7,6 +7,7 @@ export const OtterMascotAssets = {
   donate: require('../../assets/mascots/otter-donate.png'),
   donationThanks: require('../../assets/mascots/otter-donation-thanks.png'),
   crisisAssistant: require('../../assets/mascots/otter-crisis-assistant.png'),
+  fundraiserAuth: require('../../assets/mascots/otter-fundraiser-auth.png'),
   fundraiserCreate: require('../../assets/mascots/otter-fundraiser-create.png'),
   guide: require('../../assets/mascots/otter-guide.png'),
   homeAvailable: require('../../assets/mascots/otter-home-available.png'),
